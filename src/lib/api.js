@@ -107,14 +107,16 @@ export async function setAllowComments(postId, allow) {
   if (error) throw error
 }
 
-export async function createPost({ userId, venueId, file, vibe, caption, allowComments }) {
+export async function createPost({ userId, venue, file, vibe, caption, allowComments }) {
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
   const path = `${userId}/${Date.now()}.${ext}`
   const up = await supabase.storage.from('media').upload(path, file, { contentType: file.type })
   if (up.error) throw up.error
   const mediaUrl = supabase.storage.from('media').getPublicUrl(path).data.publicUrl
   const row = {
-    user_id: userId, venue_id: venueId, media_url: mediaUrl, caption,
+    user_id: userId, venue_id: venue.id, media_url: mediaUrl, caption,
+    // Each post stores where it was taken, so it uses the venue's position.
+    latitude: venue.lat, longitude: venue.lng,
     media_type: file.type.startsWith('video') ? 'video' : 'image',
     allow_comments: allowComments, vibe_tag: vibe,
     expires_at: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),

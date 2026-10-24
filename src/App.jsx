@@ -125,8 +125,9 @@ export default function App() {
     setComposing(true)
   }
 
-  const submitPost = async (form) => {
-    await api.createPost({ userId: user.id, ...form })
+  const submitPost = async ({ venueId, ...form }) => {
+    const venue = (data.postVenues || data.venues).find((v) => v.id === venueId)
+    await api.createPost({ userId: user.id, venue, ...form })
     setComposing(false)
     toast('Posted. Thanks for sharing!')
     setTab('home')
