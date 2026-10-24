@@ -121,8 +121,15 @@ export async function createPost({ userId, venue, file, vibe, caption, allowComm
     allow_comments: allowComments, vibe_tag: vibe,
     expires_at: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
   }
-  let { error } = await supabase.from('posts').insert(row)
-  // Older databases only accept "quiet" for the Dead vibe.
-  if (error && error.code === '23514' && vibe === 'dead') ({ error } = await supabase.from('posts').insert({ ...row, vibe_tag: 'quiet' }))
-  if (error) throw error
+  // The original posts table limits some columns to its own words: "photo"
+  // rather than "image", and "quiet" for the Dead vibe. Retry with those.
+  const fallbacks = { media_type: { image: 'photo' }, vibe_tag: { dead: 'quiet' } }
+  for (;;) {
+    const { error } = await supabase.from('posts').insert(row)
+    if (!error) return
+    const col = error.code === '23514' && Object.keys(fallbacks).find((c) => error.message.includes(c))
+    const alt = col && fallbacks[col][row[col]]
+    if (!alt) throw error
+    row[col] = alt
+  }
 }
