@@ -107,9 +107,8 @@ button{cursor:pointer}
 .stars{color:var(--accent)}
 
 .map{height:min(68vh,560px);border-radius:18px;overflow:hidden;background:var(--chip);z-index:0}
-/* Black-and-white street map to match the magazine look; the pins carry the colour. */
-.map .leaflet-tile-pane{filter:grayscale(1) contrast(.95) brightness(1.04)}
-@media (prefers-color-scheme:dark){.map .leaflet-tile-pane{filter:grayscale(1) invert(1) brightness(.85) contrast(.9)}}
+/* Dim the street map a little in dark mode so it doesn't glare. */
+@media (prefers-color-scheme:dark){.map .leaflet-tile-pane{filter:brightness(.8)}}
 .pin{width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:var(--vc);display:grid;place-items:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.35);position:relative;transition:transform .15s}
 .pin.none{width:26px;height:26px;font-size:12px;opacity:.85}
 .pin.lit::before{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid var(--vc);animation:pulse 1.6s ease-out infinite}
