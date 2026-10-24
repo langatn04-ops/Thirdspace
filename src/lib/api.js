@@ -24,11 +24,18 @@ function normArticle(a) {
   }
 }
 
+// "feed" hides who made anonymous posts. Before it exists, read posts directly.
+async function loadPosts() {
+  const latest = (from) => supabase.from(from).select('*').order('created_at', { ascending: false }).limit(100)
+  const res = await latest('feed')
+  return res.error ? latest('posts') : res
+}
+
 export async function loadAll(user) {
   if (!supabase) return sampleData()
   const [v, p, a] = await Promise.all([
     supabase.from('venues').select('*'),
-    supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(100),
+    loadPosts(),
     supabase.from('journal_articles').select('*').order('published_at', { ascending: false }),
   ])
   if (v.error) throw v.error
@@ -42,6 +49,8 @@ export async function loadAll(user) {
     return { ...s, articles: articles.length ? articles : s.articles, postVenues: venues }
   }
 
+  // Anonymous posts come back with no author_id, except to the person who posted them.
+  p.data.forEach((r) => { if ('author_id' in r) r.user_id = r.author_id })
   const ids = p.data.map((r) => r.id)
   const [users, likes, comments, saves] = await Promise.all([
     usernames(p.data.map((r) => r.user_id)),
@@ -58,8 +67,8 @@ export async function loadAll(user) {
     venueId: r.venue_id,
     vibe: normVibe(r.vibe_tag),
     caption: r.caption || '',
-    who: users[r.user_id]?.name || 'someone',
-    avatar: users[r.user_id]?.avatar,
+    who: r.anonymous ? 'Anonymous' : users[r.user_id]?.name || 'someone',
+    avatar: r.anonymous ? null : users[r.user_id]?.avatar,
     userId: r.user_id,
     createdAt: r.created_at,
     likes: likeCount[r.id] || 0,
@@ -69,6 +78,7 @@ export async function loadAll(user) {
     mediaUrl: r.media_url,
     mediaType: r.media_type || (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(r.media_url || '') ? 'video' : 'image'),
     allowComments: r.allow_comments !== false,
+    anonymous: !!r.anonymous,
   }))
 
   return {
@@ -107,9 +117,11 @@ export async function setAllowComments(postId, allow) {
   if (error) throw error
 }
 
-export async function createPost({ userId, venue, file, vibe, caption, allowComments }) {
+// hideName is how many hours to keep the poster's name hidden, 'forever', or null.
+export async function createPost({ userId, venue, file, vibe, caption, allowComments, hideName }) {
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
-  const path = `${userId}/${Date.now()}.${ext}`
+  // Anonymous files go in a shared folder so their address doesn't name the poster.
+  const path = hideName ? `anon/${crypto.randomUUID()}.${ext}` : `${userId}/${Date.now()}.${ext}`
   const up = await supabase.storage.from('media').upload(path, file, { contentType: file.type })
   if (up.error) throw up.error
   const mediaUrl = supabase.storage.from('media').getPublicUrl(path).data.publicUrl
@@ -121,6 +133,7 @@ export async function createPost({ userId, venue, file, vibe, caption, allowComm
     allow_comments: allowComments, vibe_tag: vibe,
     expires_at: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
   }
+  if (hideName) row.name_hidden_until = hideName === 'forever' ? 'infinity' : new Date(Date.now() + hideName * 3600 * 1000).toISOString()
   // The original posts table limits some columns to its own words: "photo"
   // rather than "image", and "quiet" for the Dead vibe. Retry with those.
   const fallbacks = { media_type: { image: 'photo' }, vibe_tag: { dead: 'quiet' } }
