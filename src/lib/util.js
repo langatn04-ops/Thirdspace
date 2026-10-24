@@ -14,6 +14,8 @@ export function normVibe(v) {
 
 export function categoryIcon(cat) {
   const c = String(cat || '').toLowerCase()
+  if (/comedy/.test(c)) return '🎤'
+  if (/tourist|landmark|museum|attraction|culture/.test(c)) return '🏛️'
   if (/bar|pub/.test(c)) return '🍺'
   if (/park|outdoor|garden|beach|pier/.test(c)) return '🌲'
   if (/restaurant|food|cafe|café/.test(c)) return '🍽️'

@@ -159,3 +159,14 @@ button{cursor:pointer}
 .tag.new{background:var(--accent);color:#fff;margin-bottom:4px}
 .body .sub{margin:22px 0 0;font:700 18px var(--serif)}
 .unfav{background:none;border:0;padding:0 0 0 8px;font-size:16px;line-height:1;color:var(--mute)}
+.find{display:flex;align-items:center;gap:10px;margin:14px 0 0;border:1px solid var(--line);border-radius:99px;padding:4px 16px;background:var(--bg)}
+.find svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--mute);stroke-width:2;stroke-linecap:round}
+.find input{flex:1;min-width:0;border:0;background:none;padding:9px 0;outline:none}
+.find input::-webkit-search-cancel-button{display:none}
+.found{margin:14px 2px 0;color:var(--mute);font-size:13px}
+.place{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:12px 2px}
+.place .pi{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--vc);font-size:16px}
+.place>span:nth-child(2){flex:1;min-width:0}
+.place b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.place small{color:var(--mute);font-size:12px}
+.srch{position:absolute;left:-6px;top:4px;background:none;border:0;padding:8px}
+.srch svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;display:block}

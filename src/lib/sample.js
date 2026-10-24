@@ -2,17 +2,17 @@
 const ago = (min) => new Date(Date.now() - min * 60000).toISOString()
 
 const venues = [
-  { id: 's1', name: 'Whelan’s', address: 'Camden Street', category: 'music', lat: 53.3366, lng: -6.2654 },
-  { id: 's2', name: 'St Stephen’s Green', address: 'Dublin 2', category: 'park', lat: 53.3382, lng: -6.2591 },
-  { id: 's3', name: 'Grafton Street', address: 'Dublin 2', category: 'street', lat: 53.342, lng: -6.26 },
-  { id: 's4', name: 'The Brazen Head', address: 'Bridge Street', category: 'bar', lat: 53.3449, lng: -6.2766 },
-  { id: 's5', name: 'Phoenix Park', address: 'Dublin 8', category: 'park', lat: 53.3559, lng: -6.3298 },
-  { id: 's6', name: 'The Long Hall', address: 'South Great George’s St', category: 'bar', lat: 53.3427, lng: -6.2647 },
-  { id: 's7', name: 'Vicar Street', address: 'The Liberties', category: 'music', lat: 53.3424, lng: -6.2793 },
-  { id: 's8', name: 'Dún Laoghaire Pier', address: 'Dún Laoghaire', category: 'outdoor', lat: 53.2945, lng: -6.134 },
-  { id: 's9', name: 'Temple Bar Square', address: 'Temple Bar', category: 'street', lat: 53.3455, lng: -6.2643 },
-  { id: 's10', name: 'Grogan’s', address: 'William Street South', category: 'bar', lat: 53.3417, lng: -6.2626 },
-  { id: 's11', name: 'The Bernard Shaw', address: 'Richmond Street South', category: 'bar', lat: 53.3315, lng: -6.2652 },
+  { id: 's1', tags: ['live music', 'gigs', 'nightlife'], name: 'Whelan’s', address: 'Camden Street', category: 'music', lat: 53.3366, lng: -6.2654 },
+  { id: 's2', tags: ['park', 'walk', 'chill', 'picnic', 'tourist'], name: 'St Stephen’s Green', address: 'Dublin 2', category: 'park', lat: 53.3382, lng: -6.2591 },
+  { id: 's3', tags: ['shopping', 'buskers', 'tourist'], name: 'Grafton Street', address: 'Dublin 2', category: 'street', lat: 53.342, lng: -6.26 },
+  { id: 's4', tags: ['pub', 'trad music', 'historic', 'tourist'], name: 'The Brazen Head', address: 'Bridge Street', category: 'bar', lat: 53.3449, lng: -6.2766 },
+  { id: 's5', tags: ['park', 'walk', 'deer', 'chill'], name: 'Phoenix Park', address: 'Dublin 8', category: 'park', lat: 53.3559, lng: -6.3298 },
+  { id: 's6', tags: ['pub', 'historic'], name: 'The Long Hall', address: 'South Great George’s St', category: 'bar', lat: 53.3427, lng: -6.2647 },
+  { id: 's7', tags: ['live music', 'gigs', 'comedy'], name: 'Vicar Street', address: 'The Liberties', category: 'music', lat: 53.3424, lng: -6.2793 },
+  { id: 's8', tags: ['walk', 'sea'], name: 'Dún Laoghaire Pier', address: 'Dún Laoghaire', category: 'outdoor', lat: 53.2945, lng: -6.134 },
+  { id: 's9', tags: ['tourist', 'nightlife', 'buskers'], name: 'Temple Bar Square', address: 'Temple Bar', category: 'street', lat: 53.3455, lng: -6.2643 },
+  { id: 's10', tags: ['pub', 'chill'], name: 'Grogan’s', address: 'William Street South', category: 'bar', lat: 53.3417, lng: -6.2626 },
+  { id: 's11', tags: ['pub', 'live music'], name: 'The Bernard Shaw', address: 'Richmond Street South', category: 'bar', lat: 53.3315, lng: -6.2652 },
 ]
 
 const P = (id, vibe, caption, who, min, likes, ar, colors, extra = {}) => ({

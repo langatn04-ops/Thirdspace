@@ -5,14 +5,18 @@ import Chips from './Chips'
 import Media from './Media'
 import { FavButton } from './PostSheet'
 import { VIBES, categoryIcon, timeAgo } from '../lib/util'
+import { INTERESTS, searchPlaces } from '../lib/search'
 
 const DUBLIN = [53.3435, -6.2655]
 
-export default function MapView({ venues, posts, filter, setFilter, onOpen, isFav, onFavourite }) {
+export default function MapView({ venues, posts, filter, setFilter, onOpen, isFav, onFavourite, focusSearch }) {
   const el = useRef(null)
   const map = useRef(null)
   const layer = useRef(null)
   const [sel, setSel] = useState(null)
+  const [query, setQuery] = useState('')
+  const [interest, setInterest] = useState('')
+  const input = useRef(null)
 
   // Each venue takes the vibe of its most recent post (posts arrive newest first).
   const latest = useMemo(() => {
@@ -21,7 +25,23 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen, isFa
     return m
   }, [posts])
 
-  const shown = venues.filter((v) => filter === 'all' || latest[v.id]?.vibe === filter)
+  const results = useMemo(() => searchPlaces(venues, latest, query, interest), [venues, latest, query, interest])
+  const vibeOk = (v) => filter === 'all' || latest[v.id]?.vibe === filter
+  const found = results && results.filter(({ v }) => vibeOk(v))
+  const shown = useMemo(() => (found ? found.map((r) => r.v) : venues.filter(vibeOk)), [found, venues, filter, latest])
+
+  useEffect(() => { if (focusSearch) input.current?.focus() }, [focusSearch])
+
+  // Zoom the map to fit what the search found.
+  useEffect(() => {
+    if (!found?.length) return
+    map.current.fitBounds(L.latLngBounds(found.map(({ v }) => [v.lat, v.lng])), { padding: [40, 40], maxZoom: 16 })
+  }, [query, interest, filter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pick = (id) => {
+    setSel(id)
+    el.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 
   useEffect(() => {
     map.current = L.map(el.current, { zoomControl: false }).setView(DUBLIN, 14)
@@ -59,7 +79,18 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen, isFa
   return (
     <>
       <h2 className="sec top">Around you</h2>
-      <p className="lede">Tap a pin to see what’s happening there now.</p>
+      <p className="lede">Search for a place or what you’re in the mood for, or tap a pin.</p>
+      <form className="find" role="search" onSubmit={(e) => { e.preventDefault(); input.current.blur() }}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+        <input ref={input} type="search" value={query} placeholder="Try “indian food” or “chill walk”" aria-label="Search places"
+          onChange={(e) => setQuery(e.target.value)} />
+        {(query || interest) && <button type="button" className="link" onClick={() => { setQuery(''); setInterest('') }}>Clear</button>}
+      </form>
+      <div className="chips" role="group" aria-label="Interests" style={{ paddingBottom: 0 }}>
+        {INTERESTS.map(([k, label]) => (
+          <button key={k} className="chip" aria-pressed={interest === k} onClick={() => setInterest(interest === k ? '' : k)}>{label}</button>
+        ))}
+      </div>
       <Chips filter={filter} setFilter={setFilter} />
       <div className="map" ref={el} aria-label="Map of Dublin venues" />
       <div className="leg">
@@ -68,6 +99,9 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen, isFa
         ))}
         <span style={{ '--vc': '#aeaeb2' }}><i />No posts yet</span>
       </div>
+      {found && (
+        <p className="found">{found.length ? `${found.length} ${found.length === 1 ? 'place' : 'places'} found` : 'No places match that yet. Try another word or interest.'}</p>
+      )}
       {venue && (
         <div className="peek" style={{ '--vc': p ? VIBES[p.vibe].color : '#aeaeb2' }}>
           {p && <Media p={p} ar="4/5" />}
@@ -82,6 +116,16 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen, isFa
           </div>
         </div>
       )}
+      {found?.map(({ v, p: lp }) => v.id !== sel && (
+        <button key={v.id} className="place" onClick={() => pick(v.id)} style={{ '--vc': lp ? VIBES[lp.vibe].color : '#aeaeb2' }}>
+          <span className="pi">{categoryIcon(v.category)}</span>
+          <span>
+            <b>{v.name}</b>
+            <small>{v.address}</small>
+          </span>
+          <span className="tag"><i />{lp ? `${VIBES[lp.vibe].label} · ${timeAgo(lp.createdAt)}` : 'No posts yet'}</span>
+        </button>
+      ))}
     </>
   )
 }
