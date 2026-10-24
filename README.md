@@ -5,8 +5,9 @@ What's happening in Dublin, right now. People post photos and videos from venues
 ## What's in the app
 
 - **Home:** venue stories, a cover story for the most talked-about spot tonight, and a Pinterest-style grid you can filter by vibe.
-- **Map:** every venue on a real Dublin map, coloured by its latest vibe. Tap a pin to see what's happening there.
+- **Map:** every venue on a real Dublin map, coloured by its latest vibe. Search by name or interest ("indian food", "chill walk", comedy, tourist spots), or tap a pin to see what's happening there.
 - **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading.
+- **Surprise me tonight (Home):** pick some interests and get one place to go, weighted by what’s live right now.
 - **Updates (bell, top right):** favourite any place with ☆ and see new posts from your places, with a count of what’s new.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
@@ -27,6 +28,7 @@ Until there are real posts in the database, the app shows sample posts so it nev
 2. Paste the whole of `supabase/schema.sql` and press **Run**. It adds the comments, likes, saves and journal tables, the storage space for photos and videos, and the first four journal reviews. It is safe to run again.
 3. Then paste and run `supabase/anonymous-posts.sql`. It hides who made anonymous posts, so nobody can tell where someone is in real time.
 4. Then paste and run `supabase/favourite-places.sql`. It stores each person's favourite places for Updates.
+5. Then paste and run `supabase/place-tags.sql`. It adds interest words to places for search, plus Indian restaurants, comedy clubs and tourist spots.
 
 ## Setting up Vercel (once)
 

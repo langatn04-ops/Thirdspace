@@ -9,6 +9,7 @@ import PostSheet from './components/PostSheet'
 import ArticleSheet from './components/ArticleSheet'
 import NewPost from './components/NewPost'
 import Updates from './components/Updates'
+import Surprise from './components/Surprise'
 
 const TABS = [
   ['home', 'Home', <path key="h" d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />],
@@ -27,6 +28,9 @@ export default function App() {
   const [openPost, setOpenPost] = useState(null)
   const [openArticle, setOpenArticle] = useState(null)
   const [composing, setComposing] = useState(false)
+  const [focusSearch, setFocusSearch] = useState(0)
+  const [surprising, setSurprising] = useState(false)
+  const [focusVenue, setFocusVenue] = useState(null)
   // While Updates is open, when it was last opened before, so new posts stay marked.
   const [updatesSince, setUpdatesSince] = useState(undefined)
   const [toastText, setToastText] = useState('')
@@ -182,6 +186,8 @@ export default function App() {
 
   const go = (k) => {
     if (k === 'post') return startPost()
+    setFocusSearch(0)
+    setFocusVenue(null)
     setTab(k)
     window.scrollTo(0, 0)
   }
@@ -189,10 +195,10 @@ export default function App() {
   let page
   if (error) page = <p className="empty">{error}</p>
   else if (!data) page = <p className="empty">Loading what’s on…</p>
-  else if (tab === 'map') page = <MapView venues={data.venues} posts={data.posts} filter={filter} setFilter={setFilter} onOpen={showPost} isFav={isFav} onFavourite={favourite} />
+  else if (tab === 'map') page = <MapView venues={data.venues} posts={data.posts} filter={filter} setFilter={setFilter} onOpen={showPost} isFav={isFav} onFavourite={favourite} focusSearch={focusSearch} focusVenue={focusVenue} />
   else if (tab === 'journal') page = <Journal articles={data.articles} latest={latest} onOpenArticle={setOpenArticle} />
   else if (tab === 'me') page = <Profile user={user} name={name} posts={data.posts} saved={data.saved} venueOf={venueOf} commentCount={commentCount} onOpen={showPost} toast={toast} />
-  else page = <Home posts={data.posts} venueOf={venueOf} commentCount={commentCount} filter={filter} setFilter={setFilter} onOpen={showPost} sample={data.sample} />
+  else page = <Home posts={data.posts} venueOf={venueOf} commentCount={commentCount} filter={filter} setFilter={setFilter} onOpen={showPost} sample={data.sample} onSurprise={() => setSurprising(true)} />
 
   const post = data && openPost && data.posts.find((p) => p.id === openPost)
   const article = data && openArticle && data.articles.find((a) => a.id === openArticle)
@@ -202,6 +208,11 @@ export default function App() {
       <div className="wrap">
         <header className="mast">
           <h1>Third Space</h1><p>Dublin, right now</p>
+          {data && (
+            <button className="srch" aria-label="Search places" onClick={() => { setTab('map'); setFocusSearch((n) => n + 1) }}>
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+            </button>
+          )}
           {data && (
             <button className="bell" aria-label={unread ? `Updates, ${unread} new` : 'Updates'} onClick={openUpdates}>
               <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
@@ -254,6 +265,18 @@ export default function App() {
           onOpen={(id) => { setUpdatesSince(undefined); showPost(id) }}
           onUnfavourite={favourite}
           onClose={() => setUpdatesSince(undefined)}
+        />
+      )}
+      {surprising && (
+        <Surprise
+          venues={data.venues}
+          latest={Object.fromEntries([...data.posts].reverse().map((p) => [p.venueId, p]))}
+          favourites={data.favourites}
+          isFav={isFav}
+          onFavourite={favourite}
+          onOpenPost={(id) => { setSurprising(false); showPost(id) }}
+          onShowOnMap={(id) => { setSurprising(false); setTab('map'); setFocusVenue(id) }}
+          onClose={() => setSurprising(false)}
         />
       )}
       {composing && <NewPost venues={data.postVenues || data.venues} onSubmit={submitPost} onClose={() => setComposing(false)} />}

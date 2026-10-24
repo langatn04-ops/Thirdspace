@@ -3,13 +3,20 @@ import Chips from './Chips'
 import Media from './Media'
 import { VIBES, backdrop } from '../lib/util'
 
-export default function Home({ posts, venueOf, commentCount, filter, setFilter, onOpen, sample }) {
-  if (!posts.length) return <p className="empty">Nothing posted yet. Tap + to share what’s happening near you.</p>
+const SurpriseButton = ({ onClick }) => (
+  <button className="surprise" onClick={onClick}>
+    <span>✨</span><span>Surprise me tonight<small>We’ll pick a place from what you like and what’s live now</small></span>
+  </button>
+)
+
+export default function Home({ posts, venueOf, commentCount, filter, setFilter, onOpen, sample, onSurprise }) {
+  if (!posts.length) return <><SurpriseButton onClick={onSurprise} /><p className="empty">Nothing posted yet. Tap + to share what’s happening near you.</p></>
   const top = posts.reduce((a, b) => (b.likes > a.likes ? b : a))
   const shown = posts.filter((p) => filter === 'all' || p.vibe === filter)
   return (
     <>
       {sample && <p className="note">You’re seeing sample posts until the first real ones arrive.</p>}
+      <SurpriseButton onClick={onSurprise} />
       <div className="stories">
         {posts.slice(0, 15).map((p) => (
           <button key={p.id} className="st" onClick={() => onOpen(p.id)}>

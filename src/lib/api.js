@@ -14,7 +14,7 @@ async function usernames(ids) {
 }
 
 function normVenue(v) {
-  return { id: v.id, name: v.name, address: v.address || '', category: v.category || '', lat: Number(v.latitude), lng: Number(v.longitude) }
+  return { id: v.id, name: v.name, address: v.address || '', category: v.category || '', tags: v.tags || [], lat: Number(v.latitude), lng: Number(v.longitude) }
 }
 
 function normArticle(a) {
