@@ -85,7 +85,11 @@ function Comments({ p, list, canPost, onPost, onNeedSignIn }) {
   )
 }
 
-export default function PostSheet({ p, venue, mine, liked, saved, comments, canPost, onLike, onSave, onComment, onAllowComments, onNeedSignIn, onClose }) {
+export function FavButton({ on, onClick }) {
+  return <button className={'fav' + (on ? ' on' : '')} aria-pressed={on} onClick={onClick}>{on ? '★ Favourite' : '☆ Favourite'}</button>
+}
+
+export default function PostSheet({ p, venue, mine, liked, saved, fav, comments, canPost, onLike, onSave, onFavourite, onComment, onAllowComments, onNeedSignIn, onClose }) {
   const popRef = useRef(null)
   const doubleTap = () => {
     if (!liked) onLike()
@@ -121,7 +125,10 @@ export default function PostSheet({ p, venue, mine, liked, saved, comments, canP
         </div>
       )}
       <div className="body">
-        <h3>{venue?.name}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h3>{venue?.name}</h3>
+          {venue && <FavButton on={fav} onClick={onFavourite} />}
+        </div>
         <small style={{ color: 'var(--mute)' }}>{venue?.address}, Dublin &nbsp;·&nbsp; {VIBES[p.vibe].label}</small>
         {p.caption && <p>{p.caption}</p>}
       </div>
