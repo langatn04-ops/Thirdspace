@@ -170,3 +170,14 @@ button{cursor:pointer}
 .place b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.place small{color:var(--mute);font-size:12px}
 .srch{position:absolute;left:-6px;top:4px;background:none;border:0;padding:8px}
 .srch svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;display:block}
+.surprise{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:16px 0 4px;border:0;border-radius:16px;padding:16px;background:linear-gradient(135deg,#ff2d55,#7a1fa2);color:#fff;font-weight:700;font-size:17px}
+.surprise small{display:block;font-weight:500;font-size:13px;opacity:.85}
+.save.big{display:block;width:100%;margin:18px 0 0;padding:14px;font-size:16px}
+.pick{margin-top:18px}
+.pick .ph{border-radius:16px}
+.pick .ph.none{aspect-ratio:16/9;display:grid;place-items:center;font-size:56px;background:var(--chip)}
+.pick small{display:block;margin-top:14px;color:var(--mute);font-weight:600}
+.pick h2{margin:2px 0 2px;font:italic 700 32px/1.05 var(--serif)}
+.pick ul{margin:10px 0 0;padding-left:18px;color:var(--ink)}
+.pick .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.pick .row .save{margin:0}

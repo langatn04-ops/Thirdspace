@@ -37,6 +37,16 @@ function searchWords(query) {
   return [...new Set(words.map((w) => SAME[w] || w))]
 }
 
+// What kind of place it is: category, interest words and current vibe.
+const kindOf = (v, p) => plain([v.category, ...(v.tags || []).map((t) => t.replace(/ /g, '-')), p?.vibe].join(' '))
+
+// Whether a place fits an interest from INTERESTS.
+export function fitsInterest(v, p, key) {
+  const words = INTERESTS.find(([k]) => k === key)?.[2].split(' ') || []
+  const kind = kindOf(v, p)
+  return words.some((w) => kind.includes(w))
+}
+
 // Ranks places by how many of the words they match. With an interest picked,
 // a place must match it.
 export function searchPlaces(venues, latest, query, interest) {
@@ -48,7 +58,7 @@ export function searchPlaces(venues, latest, query, interest) {
     const p = latest[v.id]
     // An interest only looks at what kind of place it is, so "Pubs" doesn't
     // pick up Temple Bar Square by its name.
-    const kind = plain([v.category, ...(v.tags || []).map((t) => t.replace(/ /g, '-')), p?.vibe].join(' '))
+    const kind = kindOf(v, p)
     const text = plain([v.name, v.address, p?.caption].join(' ')) + ' ' + kind
     const has = (w) => text.includes(w) || (w === 'cafe' && text.includes('coffee'))
     if (wanted.length && !wanted.some((w) => kind.includes(w))) continue

@@ -9,7 +9,7 @@ import { INTERESTS, searchPlaces } from '../lib/search'
 
 const DUBLIN = [53.3435, -6.2655]
 
-export default function MapView({ venues, posts, filter, setFilter, onOpen, isFav, onFavourite, focusSearch }) {
+export default function MapView({ venues, posts, filter, setFilter, onOpen, isFav, onFavourite, focusSearch, focusVenue }) {
   const el = useRef(null)
   const map = useRef(null)
   const layer = useRef(null)
@@ -52,6 +52,14 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen, isFa
     layer.current = L.layerGroup().addTo(map.current)
     return () => map.current.remove()
   }, [])
+
+  // Opened to show one place, from "Surprise me".
+  useEffect(() => {
+    const v = focusVenue && venues.find((x) => x.id === focusVenue)
+    if (!v) return
+    setSel(v.id)
+    map.current.setView([v.lat, v.lng], 16)
+  }, [focusVenue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     layer.current.clearLayers()

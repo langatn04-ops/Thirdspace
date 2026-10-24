@@ -7,6 +7,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 - **Home:** venue stories, a cover story for the most talked-about spot tonight, and a Pinterest-style grid you can filter by vibe.
 - **Map:** every venue on a real Dublin map, coloured by its latest vibe. Search by name or interest ("indian food", "chill walk", comedy, tourist spots), or tap a pin to see what's happening there.
 - **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading.
+- **Surprise me tonight (Home):** pick some interests and get one place to go, weighted by what’s live right now.
 - **Updates (bell, top right):** favourite any place with ☆ and see new posts from your places, with a count of what’s new.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
