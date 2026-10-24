@@ -149,3 +149,13 @@ button{cursor:pointer}
 .auth .form{padding:0}
 
 @media (prefers-reduced-motion:reduce){.ph.fake.run,.pin.lit::before,.panel,.pop.go{animation:none}}
+
+.mast{position:relative}
+.bell{position:absolute;right:-6px;top:4px;background:none;border:0;padding:8px}
+.bell svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+.bell b{position:absolute;top:2px;right:0;min-width:18px;height:18px;border-radius:9px;padding:0 5px;background:var(--accent);color:#fff;font-size:11px;line-height:18px}
+.fav{background:var(--chip);border:0;border-radius:99px;padding:6px 14px;font-weight:600;font-size:13px}
+.fav.on{background:var(--ink);color:var(--bg)}
+.tag.new{background:var(--accent);color:#fff;margin-bottom:4px}
+.body .sub{margin:22px 0 0;font:700 18px var(--serif)}
+.unfav{background:none;border:0;padding:0 0 0 8px;font-size:16px;line-height:1;color:var(--mute)}

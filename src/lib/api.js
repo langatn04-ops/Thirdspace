@@ -31,12 +31,26 @@ async function loadPosts() {
   return res.error ? latest('posts') : res
 }
 
+const noFavourites = { favourites: new Map(), seenAt: null }
+
+// Places the person has favourited (venue id → when) and when they last opened Updates.
+// Both are empty until the favourite-places SQL has been run.
+async function loadFavourites(user) {
+  if (!user) return noFavourites
+  const [f, r] = await Promise.all([
+    supabase.from('favourite_places').select('venue_id, created_at').eq('user_id', user.id).then(ok),
+    supabase.from('update_reads').select('seen_at').eq('user_id', user.id).then(ok),
+  ])
+  return { favourites: new Map(f.map((x) => [x.venue_id, x.created_at])), seenAt: r[0]?.seen_at || null }
+}
+
 export async function loadAll(user) {
-  if (!supabase) return sampleData()
-  const [v, p, a] = await Promise.all([
+  if (!supabase) return { ...sampleData(), ...noFavourites }
+  const [v, p, a, fav] = await Promise.all([
     supabase.from('venues').select('*'),
     loadPosts(),
     supabase.from('journal_articles').select('*').order('published_at', { ascending: false }),
+    loadFavourites(user),
   ])
   if (v.error) throw v.error
   if (p.error) throw p.error
@@ -46,7 +60,7 @@ export async function loadAll(user) {
   if (!p.data.length) {
     // Nothing posted yet: show sample posts, but post to the real venues.
     const s = sampleData()
-    return { ...s, articles: articles.length ? articles : s.articles, postVenues: venues }
+    return { ...s, ...fav, articles: articles.length ? articles : s.articles, postVenues: venues }
   }
 
   // Anonymous posts come back with no author_id, except to the person who posted them.
@@ -85,6 +99,7 @@ export async function loadAll(user) {
     venues, posts, articles, comments: {},
     liked: new Set(likes.filter((l) => user && l.user_id === user.id).map((l) => l.post_id)),
     saved: new Set(saves.map((s) => s.post_id)),
+    ...fav,
     sample: false,
   }
 }
@@ -109,6 +124,17 @@ export async function setLike(postId, userId, on) {
 export async function setSave(postId, userId, on) {
   const q = supabase.from('saves')
   const { error } = on ? await q.insert({ post_id: postId, user_id: userId }) : await q.delete().match({ post_id: postId, user_id: userId })
+  if (error) throw error
+}
+
+export async function setFavourite(venueId, userId, on) {
+  const q = supabase.from('favourite_places')
+  const { error } = on ? await q.insert({ venue_id: venueId, user_id: userId }) : await q.delete().match({ venue_id: venueId, user_id: userId })
+  if (error) throw error
+}
+
+export async function markUpdatesSeen(userId) {
+  const { error } = await supabase.from('update_reads').upsert({ user_id: userId, seen_at: new Date().toISOString() })
   if (error) throw error
 }
 

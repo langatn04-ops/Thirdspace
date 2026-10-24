@@ -3,11 +3,12 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import Chips from './Chips'
 import Media from './Media'
+import { FavButton } from './PostSheet'
 import { VIBES, categoryIcon, timeAgo } from '../lib/util'
 
 const DUBLIN = [53.3435, -6.2655]
 
-export default function MapView({ venues, posts, filter, setFilter, onOpen }) {
+export default function MapView({ venues, posts, filter, setFilter, onOpen, isFav, onFavourite }) {
   const el = useRef(null)
   const map = useRef(null)
   const layer = useRef(null)
@@ -74,7 +75,10 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen }) {
             <span className="tag"><i />{p ? `${VIBES[p.vibe].label} · ${timeAgo(p.createdAt)}` : 'No posts yet'}</span>
             <h3>{venue.name}</h3>
             <p>{p ? p.caption : `${venue.address}. Be the first to say what it’s like.`}</p>
-            {p && <button className="save" onClick={() => onOpen(p.id)}>Open post</button>}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {p && <button className="save" onClick={() => onOpen(p.id)}>Open post</button>}
+              <FavButton on={isFav(venue.id)} onClick={() => onFavourite(venue.id)} />
+            </div>
           </div>
         </div>
       )}

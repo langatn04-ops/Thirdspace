@@ -8,6 +8,7 @@ import Profile from './components/Profile'
 import PostSheet from './components/PostSheet'
 import ArticleSheet from './components/ArticleSheet'
 import NewPost from './components/NewPost'
+import Updates from './components/Updates'
 
 const TABS = [
   ['home', 'Home', <path key="h" d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />],
@@ -26,6 +27,8 @@ export default function App() {
   const [openPost, setOpenPost] = useState(null)
   const [openArticle, setOpenArticle] = useState(null)
   const [composing, setComposing] = useState(false)
+  // While Updates is open, when it was last opened before, so new posts stay marked.
+  const [updatesSince, setUpdatesSince] = useState(undefined)
   const [toastText, setToastText] = useState('')
 
   const toast = useCallback((t) => {
@@ -45,6 +48,13 @@ export default function App() {
     api.loadAll(user).then(setData).catch((e) => setError(e.message || 'Could not load Third Space.'))
   }, [user])
   useEffect(reload, [reload])
+
+  // Coming back to the app fetches what's new, so the Updates count stays current.
+  useEffect(() => {
+    const back = () => document.visibilityState === 'visible' && reload()
+    document.addEventListener('visibilitychange', back)
+    return () => document.removeEventListener('visibilitychange', back)
+  }, [reload])
 
   const live = supabase && data && !data.sample
   const venueOf = (p) => data.venues.find((v) => v.id === p.venueId)
@@ -119,6 +129,42 @@ export default function App() {
     }
   }
 
+  const isFav = (venueId) => data.favourites.has(venueId)
+  const favourite = async (venueId) => {
+    if (live && !user) return needSignIn('favourite places')
+    const on = !isFav(venueId)
+    const flip = (yes) => patch((d) => {
+      const m = new Map(d.favourites)
+      yes ? m.set(venueId, new Date().toISOString()) : m.delete(venueId)
+      return { favourites: m }
+    })
+    flip(on)
+    if (on) toast('Added to your places. New posts will show in Updates.')
+    if (!live) return
+    try {
+      await api.setFavourite(venueId, user.id, on)
+    } catch {
+      flip(!on)
+      toast('That didn’t save. Try again.')
+    }
+  }
+
+  // Posts by other people at favourite places. A post is new if it came after
+  // Updates was last opened and after the place was favourited.
+  const time = (t) => (t ? new Date(t).getTime() : 0)
+  const updates = data
+    ? data.posts.filter((p) => isFav(p.venueId) && !(user && p.userId === user.id)).map((p) => ({ p, venue: venueOf(p) }))
+    : []
+  const isNew = (since) => (p) => time(p.createdAt) > Math.max(time(since), time(data.favourites.get(p.venueId)))
+  const unread = data ? updates.filter(({ p }) => isNew(data.seenAt)(p)).length : 0
+
+  const openUpdates = () => {
+    if (live && !user) return needSignIn('get updates from your favourite places')
+    setUpdatesSince(data.seenAt)
+    patch(() => ({ seenAt: new Date().toISOString() }))
+    if (live) api.markUpdatesSeen(user.id).catch(() => {})
+  }
+
   const startPost = () => {
     if (!supabase) return toast('Posting works once the app is connected to the database.')
     if (!user) return needSignIn('post')
@@ -143,7 +189,7 @@ export default function App() {
   let page
   if (error) page = <p className="empty">{error}</p>
   else if (!data) page = <p className="empty">Loading what’s on…</p>
-  else if (tab === 'map') page = <MapView venues={data.venues} posts={data.posts} filter={filter} setFilter={setFilter} onOpen={showPost} />
+  else if (tab === 'map') page = <MapView venues={data.venues} posts={data.posts} filter={filter} setFilter={setFilter} onOpen={showPost} isFav={isFav} onFavourite={favourite} />
   else if (tab === 'journal') page = <Journal articles={data.articles} latest={latest} onOpenArticle={setOpenArticle} />
   else if (tab === 'me') page = <Profile user={user} name={name} posts={data.posts} saved={data.saved} venueOf={venueOf} commentCount={commentCount} onOpen={showPost} toast={toast} />
   else page = <Home posts={data.posts} venueOf={venueOf} commentCount={commentCount} filter={filter} setFilter={setFilter} onOpen={showPost} sample={data.sample} />
@@ -154,7 +200,15 @@ export default function App() {
   return (
     <>
       <div className="wrap">
-        <header className="mast"><h1>Third Space</h1><p>Dublin, right now</p></header>
+        <header className="mast">
+          <h1>Third Space</h1><p>Dublin, right now</p>
+          {data && (
+            <button className="bell" aria-label={unread ? `Updates, ${unread} new` : 'Updates'} onClick={openUpdates}>
+              <svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
+              {!!unread && <b>{unread > 9 ? '9+' : unread}</b>}
+            </button>
+          )}
+        </header>
         <main>{page}</main>
       </div>
       <nav className="tabs" aria-label="Main">
@@ -177,6 +231,8 @@ export default function App() {
           mine={post.userId === (user?.id ?? 'you')}
           liked={data.liked.has(post.id)}
           saved={data.saved.has(post.id)}
+          fav={isFav(post.venueId)}
+          onFavourite={() => favourite(post.venueId)}
           comments={live ? data.comments[post.id] : data.comments[post.id] || []}
           canPost={!live || !!user}
           onLike={() => toggle(post, 'liked', api.setLike, 'like posts')}
@@ -189,6 +245,16 @@ export default function App() {
       )}
       {article && (
         <ArticleSheet a={article} post={latest(article.venueId)} onClose={() => setOpenArticle(null)} onOpenPost={showPost} />
+      )}
+      {updatesSince !== undefined && (
+        <Updates
+          posts={updates}
+          isNew={isNew(updatesSince)}
+          places={data.venues.filter((v) => isFav(v.id))}
+          onOpen={(id) => { setUpdatesSince(undefined); showPost(id) }}
+          onUnfavourite={favourite}
+          onClose={() => setUpdatesSince(undefined)}
+        />
       )}
       {composing && <NewPost venues={data.postVenues || data.venues} onSubmit={submitPost} onClose={() => setComposing(false)} />}
       {toastText && <div className="toast" role="status">{toastText}</div>}
