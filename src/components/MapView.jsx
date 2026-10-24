@@ -6,7 +6,6 @@ import Media from './Media'
 import { VIBES, categoryIcon, timeAgo } from '../lib/util'
 
 const DUBLIN = [53.3435, -6.2655]
-const dark = () => window.matchMedia?.('(prefers-color-scheme: dark)').matches
 
 export default function MapView({ venues, posts, filter, setFilter, onOpen }) {
   const el = useRef(null)
@@ -25,8 +24,8 @@ export default function MapView({ venues, posts, filter, setFilter, onOpen }) {
 
   useEffect(() => {
     map.current = L.map(el.current, { zoomControl: false }).setView(DUBLIN, 14)
-    L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark() ? 'dark_all' : 'light_all'}/{z}/{x}/{y}{r}.png`, {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map.current)
     layer.current = L.layerGroup().addTo(map.current)
