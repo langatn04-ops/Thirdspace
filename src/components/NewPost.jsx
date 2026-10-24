@@ -13,6 +13,7 @@ export default function NewPost({ venues, onSubmit, onClose }) {
   const [allow, setAllow] = useState(true)
   const [hideName, setHideName] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [shrinking, setShrinking] = useState(null)
   const [err, setErr] = useState('')
 
   useEffect(() => {
@@ -28,13 +29,23 @@ export default function NewPost({ venues, onSubmit, onClose }) {
   const submit = async (e) => {
     e.preventDefault()
     if (!ready) return setErr('Add a photo or video, pick the place and choose a vibe.')
-    if (file.size > 50 * 1024 * 1024) return setErr('That file is over 50 MB. Try a shorter video.')
+    const tooBig = file.size > 50 * 1024 * 1024
+    if (tooBig && !file.type.startsWith('video')) return setErr('That photo is over 50 MB. Try a smaller one.')
     setBusy(true)
     setErr('')
     try {
-      await onSubmit({ file, venueId, vibe, caption: caption.trim(), allowComments: allow, hideName })
+      let upload = file
+      if (tooBig) {
+        // Loaded only when needed, since the video tools are large.
+        const { shrinkVideo } = await import('../lib/shrink')
+        setShrinking(0)
+        upload = await shrinkVideo(file, (p) => setShrinking(p))
+        setShrinking(null)
+      }
+      await onSubmit({ file: upload, venueId, vibe, caption: caption.trim(), allowComments: allow, hideName })
     } catch (e) {
       setErr(e.message || 'Something went wrong. Try again.')
+      setShrinking(null)
       setBusy(false)
     }
   }
@@ -90,7 +101,7 @@ export default function NewPost({ venues, onSubmit, onClose }) {
           </div>
         )}
         {err && <p className="err">{err}</p>}
-        <button className="save primary" style={{ margin: 0, padding: 14 }} disabled={busy}>{busy ? 'Posting…' : 'Share'}</button>
+        <button className="save primary" style={{ margin: 0, padding: 14 }} disabled={busy}>{shrinking != null ? `Shrinking video… ${Math.round(shrinking * 100)}%` : busy ? 'Posting…' : 'Share'}</button>
       </form>
     </Sheet>
   )
