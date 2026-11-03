@@ -50,7 +50,37 @@ function AuthForm({ toast }) {
   )
 }
 
-export default function Profile({ user, name, posts, saved, venueOf, commentCount, onOpen, toast }) {
+// At the bottom of Profile. Asks once more before deleting, since it can't be undone.
+function DeleteAccount({ onDelete }) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const go = async () => {
+    setBusy(true)
+    setErr('')
+    try {
+      await onDelete()
+    } catch (e) {
+      console.warn('Delete account failed', e)
+      setErr('Your account couldn’t be deleted just now. Try again, or contact us and we’ll do it for you.')
+      setBusy(false)
+    }
+  }
+  if (!open) return <p className="del"><button className="link" onClick={() => setOpen(true)}>Delete my account</button></p>
+  return (
+    <div className="safe del">
+      <b>Delete your account?</b>
+      <small>This deletes your account and everything you’ve added: posts, photos and videos (anonymous ones too), comments, likes, saves and favourite places. It can’t be undone.</small>
+      {err && <p className="err">{err}</p>}
+      <div className="row">
+        <button className="save primary" disabled={busy} onClick={go}>{busy ? 'Deleting…' : 'Yes, delete everything'}</button>
+        <button className="link" disabled={busy} onClick={() => setOpen(false)}>Cancel</button>
+      </div>
+    </div>
+  )
+}
+
+export default function Profile({ user, name, posts, saved, venueOf, commentCount, onOpen, toast, onDeleteAccount }) {
   const [tab, setTab] = useState('posts')
   if (supabase && !user) return <AuthForm toast={toast} />
 
@@ -87,6 +117,7 @@ export default function Profile({ user, name, posts, saved, venueOf, commentCoun
       ) : (
         <p className="empty">{tab === 'saved' ? 'Nothing saved yet. Open a post and tap Save to keep it here.' : 'You haven’t posted yet. Tap + to share what’s happening.'}</p>
       )}
+      {user && <DeleteAccount onDelete={onDeleteAccount} />}
     </>
   )
 }

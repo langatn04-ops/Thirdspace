@@ -192,3 +192,5 @@ button{cursor:pointer}
 .own.review{background:#fff4d6;color:#5c4400}
 .own.review small{color:#7a5d00}
 .vlabel{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:700;vertical-align:1px}
+p.del{margin:32px 0 0;text-align:center;font-size:13px}
+.safe.del{margin:32px 0 0}
