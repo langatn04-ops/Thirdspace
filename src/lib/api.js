@@ -171,6 +171,15 @@ export async function markUpdatesSeen(userId) {
   if (error) throw error
 }
 
+// Asks the database whether a caption or comment breaks the word filter
+// (slurs, threats, phone numbers). Returns a message to show, or null.
+// Before the word-filter SQL has been run, everything passes.
+export async function textProblem(text) {
+  if (!text?.trim()) return null
+  const { data, error } = await supabase.rpc('text_problem', { t: text })
+  return error ? null : data
+}
+
 export async function reportPost(postId, userId, reason) {
   const { error } = await supabase.from('reports').insert({ post_id: postId, user_id: userId, reason })
   // Reporting the same post twice is fine: the first report still counts.

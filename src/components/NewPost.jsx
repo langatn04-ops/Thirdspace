@@ -6,7 +6,7 @@ const HIDE_FOR = [[3, 'For 3 hours'], [6, 'For 6 hours'], [24, 'Until tomorrow']
 
 // myVenue is set when this is a venue's staff account: it posts at its own
 // venue only, and always with its name and Venue label showing.
-export default function NewPost({ venues, myVenue, onSubmit, onClose }) {
+export default function NewPost({ venues, myVenue, checkText, onSubmit, onClose }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [venueId, setVenueId] = useState(myVenue || '')
@@ -36,6 +36,12 @@ export default function NewPost({ venues, myVenue, onSubmit, onClose }) {
     setBusy(true)
     setErr('')
     try {
+      // Check the caption first, so nothing uploads if it needs changing.
+      const problem = await checkText(caption.trim())
+      if (problem) {
+        setBusy(false)
+        return setErr(problem)
+      }
       // Loaded only when needed, since the video tools are large.
       // Every file is copied without its hidden details (like GPS) first.
       let upload
