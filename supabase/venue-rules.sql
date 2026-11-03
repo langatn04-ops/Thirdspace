@@ -2,7 +2,7 @@
 -- * Venue accounts (bar staff posting for their venue) get a "Venue" label,
 --   can't post anonymously, and can only post at their own venue, so they
 --   can't fake vibes or trash rivals.
--- * Everyone can post at most once per place per hour.
+-- * Everyone can post at most twice per place per hour.
 -- Paste into Supabase → SQL Editor → New query and press Run.
 -- It is safe to run more than once.
 --
@@ -34,7 +34,8 @@ create or replace function public.posting_rules() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   own_venue text;
-  last_post timestamptz;
+  recent int;
+  oldest timestamptz;
 begin
   -- Only posts made through the app. Nicole can still add anything in the dashboard.
   if auth.uid() is null then
@@ -54,12 +55,13 @@ begin
     end if;
   end if;
 
-  select max(p.created_at) into last_post from public.posts p
+  -- At most 2 posts per place in any hour. The wait is until the older of
+  -- the two is an hour old.
+  select count(*), min(p.created_at) into recent, oldest from public.posts p
     where p.user_id = new.user_id and p.venue_id = new.venue_id and p.created_at > now() - interval '1 hour';
-  if last_post is not null then
-    raise exception 'You posted here % min ago. You can post here again in % min.',
-      greatest(1, floor(extract(epoch from now() - last_post) / 60)::int),
-      greatest(1, ceil(60 - extract(epoch from now() - last_post) / 60)::int)
+  if recent >= 2 then
+    raise exception 'You’ve already posted here twice in the last hour. You can post here again in % min.',
+      greatest(1, ceil(60 - extract(epoch from now() - oldest) / 60)::int)
       using errcode = 'P0001';
   end if;
   return new;

@@ -9,7 +9,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 - **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading. Before anything uploads, the app makes a clean copy without the hidden details phones store inside photos and videos, like the GPS spot where they were taken.
 - **Surprise me tonight (Home):** pick some interests and get one place to go, weighted by what’s live right now.
 - **Updates (bell, top right):** favourite any place with ☆ and see new posts from your places, with a count of what’s new.
-- **Fair posting:** everyone can post at most once per place per hour. Posts from venue staff show a **Venue** label.
+- **Fair posting:** everyone can post at most twice per place per hour. Posts from venue staff show a **Venue** label.
 - **Report and block (bottom of every post):** report a post with a reason, or block the person who posted it. You stop seeing what you reported or blocked straight away. A post with 3 reports hides for everyone until a moderator checks it. Anonymous posts can be reported but not blocked, so blocking never gives away who posted them.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
@@ -32,7 +32,7 @@ Until there are real posts in the database, the app shows sample posts so it nev
 4. Then paste and run `supabase/favourite-places.sql`. It stores each person's favourite places for Updates.
 5. Then paste and run `supabase/place-tags.sql`. It adds interest words to places for search, plus Indian restaurants, comedy clubs and tourist spots.
 6. Then paste and run `supabase/report-block.sql`. It switches on reporting and blocking, and hides a post after 3 reports.
-7. Then paste and run `supabase/venue-rules.sql`. It adds venue accounts and limits everyone to one post per place per hour.
+7. Then paste and run `supabase/venue-rules.sql`. It adds venue accounts and limits everyone to two posts per place per hour.
 
 ## Venue accounts
 
