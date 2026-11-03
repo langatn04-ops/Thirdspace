@@ -40,6 +40,8 @@ export async function shrinkVideo(file, onProgress) {
         forceTranscode: true,
       }
     },
+    // Leave out hidden details such as where the video was filmed.
+    tags: {},
     showWarnings: false,
   })
   if (!conversion.isValid || !conversion.utilizedTracks.some((t) => t.isVideoTrack())) {
