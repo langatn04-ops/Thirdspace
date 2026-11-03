@@ -212,6 +212,14 @@ export default function App() {
     if (live) api.markUpdatesSeen(user.id).catch(() => {})
   }
 
+  const deleteAccount = async () => {
+    await api.deleteMyAccount(user.id)
+    setUser(null)
+    setTab('home')
+    toast('Your account and everything in it has been deleted.')
+    reload()
+  }
+
   const startPost = () => {
     if (!supabase) return toast('Posting works once the app is connected to the database.')
     if (!user) return needSignIn('post')
@@ -240,7 +248,7 @@ export default function App() {
   else if (!data) page = <p className="empty">Loading what’s on…</p>
   else if (tab === 'map') page = <MapView venues={data.venues} posts={data.posts} filter={filter} setFilter={setFilter} onOpen={showPost} isFav={isFav} onFavourite={favourite} focusSearch={focusSearch} focusVenue={focusVenue} />
   else if (tab === 'journal') page = <Journal articles={data.articles} latest={latest} onOpenArticle={setOpenArticle} />
-  else if (tab === 'me') page = <Profile user={user} name={name} posts={data.posts} saved={data.saved} venueOf={venueOf} commentCount={commentCount} onOpen={showPost} toast={toast} />
+  else if (tab === 'me') page = <Profile user={user} name={name} posts={data.posts} saved={data.saved} venueOf={venueOf} commentCount={commentCount} onOpen={showPost} toast={toast} onDeleteAccount={deleteAccount} />
   else page = <Home posts={data.posts} venueOf={venueOf} commentCount={commentCount} filter={filter} setFilter={setFilter} onOpen={showPost} sample={data.sample} onSurprise={() => setSurprising(true)} />
 
   const post = data && openPost && data.posts.find((p) => p.id === openPost)

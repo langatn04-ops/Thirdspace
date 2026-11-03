@@ -180,6 +180,27 @@ export async function textProblem(text) {
   return error ? null : data
 }
 
+// Deletes the signed-in person's photos and videos, then their account and
+// everything linked to it (see supabase/delete-account.sql), then signs out.
+export async function deleteMyAccount(userId) {
+  const bucket = supabase.storage.from('media')
+  // Files from their posts, including anonymous ones in the shared folder.
+  const mine = ok(await supabase.from('feed').select('media_url').eq('author_id', userId))
+  const marker = '/object/public/media/'
+  const paths = new Set(mine.map((r) => r.media_url || '').filter((u) => u.includes(marker))
+    .map((u) => decodeURIComponent(u.split(marker)[1].split('?')[0])))
+  // Plus anything else left in their own folder.
+  const listed = await bucket.list(userId, { limit: 1000 })
+  ok(listed).forEach((f) => f.id && paths.add(`${userId}/${f.name}`))
+  if (paths.size) {
+    const { error } = await bucket.remove([...paths])
+    if (error) console.warn('Some files could not be removed', error)
+  }
+  const { error } = await supabase.rpc('delete_my_account')
+  if (error) throw error
+  await supabase.auth.signOut().catch(() => {})
+}
+
 export async function reportPost(postId, userId, reason) {
   const { error } = await supabase.from('reports').insert({ post_id: postId, user_id: userId, reason })
   // Reporting the same post twice is fine: the first report still counts.
