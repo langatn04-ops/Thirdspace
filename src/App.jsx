@@ -133,6 +133,40 @@ export default function App() {
     }
   }
 
+  // Reporting hides the post for the reporter straight away. After 3 reports
+  // it hides for everyone until a moderator checks it.
+  const report = async (p, reason) => {
+    if (live && !user) return needSignIn('report posts')
+    if (live) {
+      try {
+        await api.reportPost(p.id, user.id, reason)
+      } catch {
+        return toast('Your report didn’t send. Try again.')
+      }
+    }
+    setOpenPost(null)
+    patch((d) => ({ reported: new Set(d.reported).add(p.id), posts: d.posts.filter((x) => x.id !== p.id) }))
+    toast('Thanks for telling us. We’ll check it within 24 hours.')
+  }
+
+  const block = async (p) => {
+    if (live && !user) return needSignIn('block people')
+    if (live) {
+      try {
+        await api.blockPerson(user.id, p.userId)
+      } catch {
+        return toast('That didn’t work. Try again.')
+      }
+    }
+    setOpenPost(null)
+    patch((d) => {
+      const safety = { reported: d.reported, blocked: new Set(d.blocked).add(p.userId) }
+      const gone = (x) => x.id === p.id || api.hiddenFor(safety)(x)
+      return { blocked: safety.blocked, posts: d.posts.filter((x) => !gone(x)) }
+    })
+    toast(`Blocked. You won’t see posts or comments from ${p.who} any more.`)
+  }
+
   const isFav = (venueId) => data.favourites.has(venueId)
   const favourite = async (venueId) => {
     if (live && !user) return needSignIn('favourite places')
@@ -244,12 +278,14 @@ export default function App() {
           saved={data.saved.has(post.id)}
           fav={isFav(post.venueId)}
           onFavourite={() => favourite(post.venueId)}
-          comments={live ? data.comments[post.id] : data.comments[post.id] || []}
+          comments={(live ? data.comments[post.id] : data.comments[post.id] || [])?.filter((c) => !data.blocked.has(c.userId))}
           canPost={!live || !!user}
           onLike={() => toggle(post, 'liked', api.setLike, 'like posts')}
           onSave={() => toggle(post, 'saved', api.setSave, 'save posts')}
           onComment={(body, verdict) => comment(post, body, verdict)}
           onAllowComments={(allow) => allowComments(post, allow)}
+          onReport={(reason) => report(post, reason)}
+          onBlock={() => block(post)}
           onNeedSignIn={() => needSignIn('comment')}
           onClose={() => setOpenPost(null)}
         />

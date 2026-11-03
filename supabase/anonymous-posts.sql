@@ -7,6 +7,8 @@
 -- 1. When the poster's name may be shown. Empty means straight away,
 --    'infinity' means never.
 alter table public.posts add column if not exists name_hidden_until timestamptz;
+-- Set when a post is hidden for having 3 reports (see report-block.sql).
+alter table public.posts add column if not exists hidden_at timestamptz;
 
 -- 2. Nobody can read who posted straight from the posts table any more.
 --    Every other column stays readable.
@@ -21,7 +23,8 @@ begin
   execute format('grant select (%s) on public.posts to anon, authenticated', cols);
 
   -- 3. The feed the app reads: the poster's id only once their name may be
-  --    shown, or to the poster themselves.
+  --    shown, or to the poster themselves. Posts hidden by reports are left
+  --    out, except for their poster.
   drop view if exists public.feed;
   execute format($sql$
     create view public.feed as
@@ -29,7 +32,8 @@ begin
         case when p.name_hidden_until is null or p.name_hidden_until <= now() or p.user_id = auth.uid()
           then p.user_id end as author_id,
         coalesce(p.name_hidden_until > now(), false) as anonymous
-      from public.posts p$sql$, (select string_agg('p.' || c, ', ') from unnest(string_to_array(cols, ', ')) c));
+      from public.posts p
+      where p.hidden_at is null or p.user_id = auth.uid()$sql$, (select string_agg('p.' || c, ', ') from unnest(string_to_array(cols, ', ')) c));
 end $$;
 grant select on public.feed to anon, authenticated;
 
