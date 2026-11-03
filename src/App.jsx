@@ -108,7 +108,7 @@ export default function App() {
 
   const comment = async (p, body, verdict) => {
     if (!live) {
-      const c = { id: Date.now(), postId: p.id, who: name, verdict, body, createdAt: new Date().toISOString() }
+      const c = { id: Date.now(), postId: p.id, userId: 'you', who: name, verdict, body, createdAt: new Date().toISOString() }
       patch((d) => ({ comments: { ...d.comments, [p.id]: [...(d.comments[p.id] || []), c] } }))
       return true
     }
@@ -129,6 +129,34 @@ export default function App() {
       toast(e?.code === 'P0001' && e.message ? e.message : 'Your comment didn’t post. Try again.')
       return false
     }
+  }
+
+  const removePost = async (p) => {
+    if (live) {
+      try {
+        await api.deletePost(p.id)
+      } catch (e) {
+        console.warn('Delete post failed', e)
+        return toast('That post couldn’t be deleted. Try again.')
+      }
+    }
+    setOpenPost(null)
+    patch((d) => ({ posts: d.posts.filter((x) => x.id !== p.id) }))
+    toast('Post deleted.')
+  }
+
+  const removeComment = async (p, c) => {
+    if (live) {
+      try {
+        await api.deleteComment(c.id)
+      } catch (e) {
+        console.warn('Delete comment failed', e)
+        return toast('That comment couldn’t be deleted. Try again.')
+      }
+    }
+    patch((d) => ({ comments: { ...d.comments, [p.id]: (d.comments[p.id] || []).filter((x) => x.id !== c.id) } }))
+    patchPost(p.id, (x) => ({ commentCount: Math.max(0, (x.commentCount || 1) - 1) }))
+    toast('Comment deleted.')
   }
 
   const allowComments = async (p, allow) => {
@@ -301,6 +329,9 @@ export default function App() {
           onSave={() => toggle(post, 'saved', api.setSave, 'save posts')}
           onComment={(body, verdict) => comment(post, body, verdict)}
           onAllowComments={(allow) => allowComments(post, allow)}
+          me={user?.id ?? 'you'}
+          onDelete={() => removePost(post)}
+          onDeleteComment={(c) => removeComment(post, c)}
           onReport={(reason) => report(post, reason)}
           onBlock={() => block(post)}
           onNeedSignIn={() => needSignIn('comment')}

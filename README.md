@@ -12,6 +12,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 - **Fair posting:** everyone can post at most twice per place per hour. Posts from venue staff show a **Venue** label.
 - **Word filter:** captions and comments can't include slurs, threats or phone numbers.
 - **Delete my account (bottom of Profile):** deletes the person's account and everything they added, including photos and videos, as GDPR requires.
+- **Delete your own posts and comments:** "Delete post" on your own posts (the photo or video goes too). Press and hold one of your comments to delete it.
 - **Report and block (bottom of every post):** report a post with a reason, or block the person who posted it. You stop seeing what you reported or blocked straight away. A post with 3 reports hides for everyone until a moderator checks it. Anonymous posts can be reported but not blocked, so blocking never gives away who posted them.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
@@ -37,6 +38,7 @@ Until there are real posts in the database, the app shows sample posts so it nev
 7. Then paste and run `supabase/venue-rules.sql`. It adds venue accounts and limits everyone to two posts per place per hour.
 8. Then paste and run `supabase/word-filter.sql`. It stops captions and comments with slurs, threats or phone numbers.
 9. Then paste and run `supabase/delete-account.sql`. It makes the "Delete my account" button on Profile work.
+10. Then paste and run `supabase/delete-posts.sql`. It lets people delete their own posts.
 
 ## The word filter
 

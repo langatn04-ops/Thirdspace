@@ -180,15 +180,35 @@ export async function textProblem(text) {
   return error ? null : data
 }
 
+// Where a photo or video lives in storage, from its public address.
+function mediaPath(url) {
+  const marker = '/object/public/media/'
+  return url?.includes(marker) ? decodeURIComponent(url.split(marker)[1].split('?')[0]) : null
+}
+
+// Deletes one of your own posts, then its photo or video.
+export async function deletePost(postId) {
+  const { data: url, error } = await supabase.rpc('delete_my_post', { target_post: String(postId) })
+  if (error) throw error
+  const path = mediaPath(url)
+  if (path) {
+    const { error: e } = await supabase.storage.from('media').remove([path])
+    if (e) console.warn('Could not remove the file', e)
+  }
+}
+
+export async function deleteComment(commentId) {
+  const { error } = await supabase.from('comments').delete().eq('id', commentId)
+  if (error) throw error
+}
+
 // Deletes the signed-in person's photos and videos, then their account and
 // everything linked to it (see supabase/delete-account.sql), then signs out.
 export async function deleteMyAccount(userId) {
   const bucket = supabase.storage.from('media')
   // Files from their posts, including anonymous ones in the shared folder.
   const mine = ok(await supabase.from('feed').select('media_url').eq('author_id', userId))
-  const marker = '/object/public/media/'
-  const paths = new Set(mine.map((r) => r.media_url || '').filter((u) => u.includes(marker))
-    .map((u) => decodeURIComponent(u.split(marker)[1].split('?')[0])))
+  const paths = new Set(mine.map((r) => mediaPath(r.media_url)).filter(Boolean))
   // Plus anything else left in their own folder.
   const listed = await bucket.list(userId, { limit: 1000 })
   ok(listed).forEach((f) => f.id && paths.add(`${userId}/${f.name}`))
