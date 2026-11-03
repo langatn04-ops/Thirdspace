@@ -315,7 +315,7 @@ export default function App() {
           onClose={() => setSurprising(false)}
         />
       )}
-      {composing && <NewPost venues={data.postVenues || data.venues} onSubmit={submitPost} onClose={() => setComposing(false)} />}
+      {composing && <NewPost venues={data.postVenues || data.venues} myVenue={user && data.venueAccounts.get(user.id)} onSubmit={submitPost} onClose={() => setComposing(false)} />}
       {toastText && <div className="toast" role="status">{toastText}</div>}
     </>
   )

@@ -18,7 +18,7 @@ const venues = [
 const P = (id, vibe, caption, who, min, likes, ar, colors, extra = {}) => ({
   id: 'p' + id, venueId: 's' + id, vibe, caption, who, userId: who, createdAt: ago(min), likes, ar, colors,
   mediaUrl: null, mediaType: extra.video ? 'video' : 'image', fakeVideo: extra.video || 0,
-  allowComments: extra.allowComments !== false,
+  allowComments: extra.allowComments !== false, byVenue: !!extra.venue,
 })
 
 const posts = [
@@ -28,7 +28,7 @@ const posts = [
   P(3, 'busy', 'Three buskers, one big crowd. The violinist outside Brown Thomas is unreal.', 'maeve.k', 18, 226, '3/4', ['#ffb347', '#d6336c', '#3b1330']),
   P(4, 'lit', 'Trad session in full swing. Snug seats are gone, standing room only.', 'donal', 22, 274, '4/6', ['#ff9a3c', '#8a2b0f', '#2a0c05'], { video: 34 }),
   P(5, 'dead', 'Deer, golden light, nobody else. Ideal if you want quiet.', 'sorcha', 35, 96, '5/4', ['#cfe8a8', '#4f7d4b', '#16301f']),
-  P(6, 'busy', 'Warm, loud and full of regulars. A stool just opened at the bar.', 'ronan', 41, 131, '1/1', ['#e8b4a0', '#9c3d2e', '#2b0f0c'], { allowComments: false }),
+  P(6, 'busy', 'Warm, loud and full of regulars. A stool just opened at the bar.', 'thelonghall', 41, 131, '1/1', ['#e8b4a0', '#9c3d2e', '#2b0f0c'], { allowComments: false, venue: true }),
   P(7, 'lit', 'Support act just finished and the room is buzzing.', 'lena.o', 47, 289, '3/4', ['#6a5cff', '#e0338f', '#120a33']),
   P(8, 'chill', 'Sunset walk, ice cream queue, harbour lights coming on.', 'tadhg', 62, 204, '4/5', ['#ffb199', '#4b79a1', '#0e2238']),
   P(9, 'busy', 'Fire juggler and a drum circle. Hard to get through but worth it.', 'niamh', 70, 177, '5/6', ['#f7d070', '#e4572e', '#34130b'], { video: 15 }),

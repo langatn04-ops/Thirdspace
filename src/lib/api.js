@@ -33,6 +33,14 @@ async function loadPosts() {
 
 const noFavourites = { favourites: new Map(), seenAt: null }
 const noSafety = { reported: new Set(), blocked: new Set() }
+const noVenueAccounts = { venueAccounts: new Map() }
+
+// Accounts run by a venue's staff (account id → venue id). Empty until the
+// venue-rules SQL has been run.
+async function loadVenueAccounts() {
+  const rows = ok(await supabase.from('venue_accounts').select('user_id, venue_id'))
+  return { venueAccounts: new Map(rows.map((r) => [r.user_id, r.venue_id])) }
+}
 
 // Posts the person has reported and people they've blocked, so neither shows
 // up for them. Both are empty until the report-block SQL has been run.
@@ -62,13 +70,14 @@ async function loadFavourites(user) {
 }
 
 export async function loadAll(user) {
-  if (!supabase) return { ...sampleData(), ...noFavourites, ...noSafety }
-  const [v, p, a, fav, safety] = await Promise.all([
+  if (!supabase) return { ...sampleData(), ...noFavourites, ...noSafety, ...noVenueAccounts }
+  const [v, p, a, fav, safety, va] = await Promise.all([
     supabase.from('venues').select('*'),
     loadPosts(),
     supabase.from('journal_articles').select('*').order('published_at', { ascending: false }),
     loadFavourites(user),
     loadSafety(user),
+    loadVenueAccounts(),
   ])
   if (v.error) throw v.error
   if (p.error) throw p.error
@@ -78,7 +87,7 @@ export async function loadAll(user) {
   if (!p.data.length) {
     // Nothing posted yet: show sample posts, but post to the real venues.
     const s = sampleData()
-    return { ...s, ...fav, ...safety, articles: articles.length ? articles : s.articles, postVenues: venues }
+    return { ...s, ...fav, ...safety, ...va, articles: articles.length ? articles : s.articles, postVenues: venues }
   }
 
   // Anonymous posts come back with no author_id, except to the person who posted them.
@@ -111,6 +120,8 @@ export async function loadAll(user) {
     mediaType: r.media_type || (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(r.media_url || '') ? 'video' : 'image'),
     allowComments: r.allow_comments !== false,
     anonymous: !!r.anonymous,
+    // Posted by the venue's own staff.
+    byVenue: !r.anonymous && va.venueAccounts.has(r.user_id),
     // Only the poster gets hidden posts back, while a moderator checks them.
     underReview: !!r.hidden_at,
   })).filter((x) => !hiddenFor(safety)(x))
@@ -121,6 +132,7 @@ export async function loadAll(user) {
     saved: new Set(saves.map((s) => s.post_id)),
     ...fav,
     ...safety,
+    ...va,
     sample: false,
   }
 }

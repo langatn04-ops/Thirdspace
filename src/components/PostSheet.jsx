@@ -152,7 +152,7 @@ export default function PostSheet({ p, venue, mine, liked, saved, fav, comments,
     <Sheet label={`Post at ${venue?.name || 'a venue'}`} onClose={onClose}>
       <div className="pt">
         <div className="av" style={backdrop(p.colors)}>{(venue?.name || '?')[0]}</div>
-        <div><b>{p.who}</b><small>{timeAgo(p.createdAt)} at {venue?.name}</small></div>
+        <div><b>{p.who}</b>{p.byVenue && <span className="vlabel">Venue</span>}<small>{timeAgo(p.createdAt)} at {venue?.name}</small></div>
         <button className="x" aria-label="Close" onClick={onClose}>×</button>
       </div>
       {p.fakeVideo ? (
