@@ -32,6 +32,23 @@ async function loadPosts() {
 }
 
 const noFavourites = { favourites: new Map(), seenAt: null }
+const noSafety = { reported: new Set(), blocked: new Set() }
+
+// Posts the person has reported and people they've blocked, so neither shows
+// up for them. Both are empty until the report-block SQL has been run.
+async function loadSafety(user) {
+  if (!user) return noSafety
+  const [r, b] = await Promise.all([
+    supabase.from('reports').select('post_id').eq('user_id', user.id).then(ok),
+    supabase.from('blocks').select('blocked_id').eq('blocker_id', user.id).then(ok),
+  ])
+  return { reported: new Set(r.map((x) => x.post_id)), blocked: new Set(b.map((x) => x.blocked_id)) }
+}
+
+// Blocking only covers posts that show a name, so it never gives away who is
+// behind an anonymous post.
+export const hiddenFor = ({ reported, blocked }) => (p) =>
+  reported.has(p.id) || (!p.anonymous && blocked.has(p.userId))
 
 // Places the person has favourited (venue id → when) and when they last opened Updates.
 // Both are empty until the favourite-places SQL has been run.
@@ -45,12 +62,13 @@ async function loadFavourites(user) {
 }
 
 export async function loadAll(user) {
-  if (!supabase) return { ...sampleData(), ...noFavourites }
-  const [v, p, a, fav] = await Promise.all([
+  if (!supabase) return { ...sampleData(), ...noFavourites, ...noSafety }
+  const [v, p, a, fav, safety] = await Promise.all([
     supabase.from('venues').select('*'),
     loadPosts(),
     supabase.from('journal_articles').select('*').order('published_at', { ascending: false }),
     loadFavourites(user),
+    loadSafety(user),
   ])
   if (v.error) throw v.error
   if (p.error) throw p.error
@@ -60,7 +78,7 @@ export async function loadAll(user) {
   if (!p.data.length) {
     // Nothing posted yet: show sample posts, but post to the real venues.
     const s = sampleData()
-    return { ...s, ...fav, articles: articles.length ? articles : s.articles, postVenues: venues }
+    return { ...s, ...fav, ...safety, articles: articles.length ? articles : s.articles, postVenues: venues }
   }
 
   // Anonymous posts come back with no author_id, except to the person who posted them.
@@ -93,13 +111,16 @@ export async function loadAll(user) {
     mediaType: r.media_type || (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(r.media_url || '') ? 'video' : 'image'),
     allowComments: r.allow_comments !== false,
     anonymous: !!r.anonymous,
-  }))
+    // Only the poster gets hidden posts back, while a moderator checks them.
+    underReview: !!r.hidden_at,
+  })).filter((x) => !hiddenFor(safety)(x))
 
   return {
     venues, posts, articles, comments: {},
     liked: new Set(likes.filter((l) => user && l.user_id === user.id).map((l) => l.post_id)),
     saved: new Set(saves.map((s) => s.post_id)),
     ...fav,
+    ...safety,
     sample: false,
   }
 }
@@ -107,7 +128,7 @@ export async function loadAll(user) {
 export async function loadComments(postId) {
   const rows = ok(await supabase.from('comments').select('*').eq('post_id', postId).order('created_at'))
   const users = await usernames(rows.map((r) => r.user_id))
-  return rows.map((r) => ({ id: r.id, postId, who: users[r.user_id]?.name || 'someone', verdict: r.verdict, body: r.body, createdAt: r.created_at }))
+  return rows.map((r) => ({ id: r.id, postId, userId: r.user_id, who: users[r.user_id]?.name || 'someone', verdict: r.verdict, body: r.body, createdAt: r.created_at }))
 }
 
 export async function addComment({ postId, userId, body, verdict }) {
@@ -136,6 +157,17 @@ export async function setFavourite(venueId, userId, on) {
 export async function markUpdatesSeen(userId) {
   const { error } = await supabase.from('update_reads').upsert({ user_id: userId, seen_at: new Date().toISOString() })
   if (error) throw error
+}
+
+export async function reportPost(postId, userId, reason) {
+  const { error } = await supabase.from('reports').insert({ post_id: postId, user_id: userId, reason })
+  // Reporting the same post twice is fine: the first report still counts.
+  if (error && error.code !== '23505') throw error
+}
+
+export async function blockPerson(userId, blockedId) {
+  const { error } = await supabase.from('blocks').insert({ blocker_id: userId, blocked_id: blockedId })
+  if (error && error.code !== '23505') throw error
 }
 
 export async function setAllowComments(postId, allow) {

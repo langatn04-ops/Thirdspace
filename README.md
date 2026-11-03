@@ -9,6 +9,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 - **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading.
 - **Surprise me tonight (Home):** pick some interests and get one place to go, weighted by what’s live right now.
 - **Updates (bell, top right):** favourite any place with ☆ and see new posts from your places, with a count of what’s new.
+- **Report and block (bottom of every post):** report a post with a reason, or block the person who posted it. You stop seeing what you reported or blocked straight away. A post with 3 reports hides for everyone until a moderator checks it. Anonymous posts can be reported but not blocked, so blocking never gives away who posted them.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
 
@@ -29,6 +30,14 @@ Until there are real posts in the database, the app shows sample posts so it nev
 3. Then paste and run `supabase/anonymous-posts.sql`. It hides who made anonymous posts, so nobody can tell where someone is in real time.
 4. Then paste and run `supabase/favourite-places.sql`. It stores each person's favourite places for Updates.
 5. Then paste and run `supabase/place-tags.sql`. It adds interest words to places for search, plus Indian restaurants, comedy clubs and tourist spots.
+6. Then paste and run `supabase/report-block.sql`. It switches on reporting and blocking, and hides a post after 3 reports.
+
+## Checking reports (moderators)
+
+In Supabase, open **Table Editor → report_queue**. Each row is a reported post with how many reports it has and why. A post with 3 or more reports is already hidden (it has a `hidden_at` time).
+
+- **It's fine:** open the post in the **posts** table, clear `hidden_at` and tick `checked_ok`. It comes back and won't hide again.
+- **It breaks the rules:** delete the post in the **posts** table. `poster` in report_queue is the account behind it, even for anonymous posts, if you need to ban someone.
 
 ## Setting up Vercel (once)
 
