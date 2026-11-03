@@ -116,8 +116,9 @@ export default function App() {
       const list = await api.loadComments(p.id)
       patch((d) => ({ comments: { ...d.comments, [p.id]: list } }))
       return true
-    } catch {
-      toast('Your comment didn’t post. Try again.')
+    } catch (e) {
+      // The word filter's own message says what to change.
+      toast(e?.code === 'P0001' ? e.message : 'Your comment didn’t post. Try again.')
       return false
     }
   }
@@ -315,7 +316,7 @@ export default function App() {
           onClose={() => setSurprising(false)}
         />
       )}
-      {composing && <NewPost venues={data.postVenues || data.venues} myVenue={user && data.venueAccounts.get(user.id)} onSubmit={submitPost} onClose={() => setComposing(false)} />}
+      {composing && <NewPost venues={data.postVenues || data.venues} myVenue={user && data.venueAccounts.get(user.id)} checkText={api.textProblem} onSubmit={submitPost} onClose={() => setComposing(false)} />}
       {toastText && <div className="toast" role="status">{toastText}</div>}
     </>
   )
