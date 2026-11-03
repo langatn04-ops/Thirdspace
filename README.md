@@ -6,7 +6,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 
 - **Home:** venue stories, a cover story for the most talked-about spot tonight, and a Pinterest-style grid you can filter by vibe.
 - **Map:** every venue on a real Dublin map, coloured by its latest vibe. Search by name or interest ("indian food", "chill walk", comedy, tourist spots), or tap a pin to see what's happening there.
-- **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading.
+- **+ (post):** share a photo or video, choose the venue and vibe, decide whether people can comment, and optionally post anonymously for a few hours or forever. Videos over 50 MB are shrunk on the phone before uploading. Before anything uploads, the app makes a clean copy without the hidden details phones store inside photos and videos, like the GPS spot where they were taken.
 - **Surprise me tonight (Home):** pick some interests and get one place to go, weighted by what’s live right now.
 - **Updates (bell, top right):** favourite any place with ☆ and see new posts from your places, with a count of what’s new.
 - **Report and block (bottom of every post):** report a post with a reason, or block the person who posted it. You stop seeing what you reported or blocked straight away. A post with 3 reports hides for everyone until a moderator checks it. Anonymous posts can be reported but not blocked, so blocking never gives away who posted them.
