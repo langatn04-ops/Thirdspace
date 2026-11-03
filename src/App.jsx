@@ -38,7 +38,8 @@ export default function App() {
   const toast = useCallback((t) => {
     setToastText(t)
     clearTimeout(toast.h)
-    toast.h = setTimeout(() => setToastText(''), 2500)
+    // Longer messages stay up longer, so there's time to read them.
+    toast.h = setTimeout(() => setToastText(''), Math.max(2500, t.length * 70))
   }, [])
 
   useEffect(() => {
@@ -111,6 +112,12 @@ export default function App() {
       patch((d) => ({ comments: { ...d.comments, [p.id]: [...(d.comments[p.id] || []), c] } }))
       return true
     }
+    // Check against the word filter first, so the reason always shows.
+    const problem = await api.textProblem(body)
+    if (problem) {
+      toast(problem)
+      return false
+    }
     try {
       await api.addComment({ postId: p.id, userId: user.id, body, verdict })
       const list = await api.loadComments(p.id)
@@ -118,7 +125,8 @@ export default function App() {
       return true
     } catch (e) {
       // The word filter's own message says what to change.
-      toast(e?.code === 'P0001' ? e.message : 'Your comment didn’t post. Try again.')
+      console.warn('Comment failed', e)
+      toast(e?.code === 'P0001' && e.message ? e.message : 'Your comment didn’t post. Try again.')
       return false
     }
   }
