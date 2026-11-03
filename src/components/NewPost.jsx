@@ -34,13 +34,17 @@ export default function NewPost({ venues, onSubmit, onClose }) {
     setBusy(true)
     setErr('')
     try {
-      let upload = file
+      // Loaded only when needed, since the video tools are large.
+      // Every file is copied without its hidden details (like GPS) first.
+      let upload
       if (tooBig) {
-        // Loaded only when needed, since the video tools are large.
         const { shrinkVideo } = await import('../lib/shrink')
         setShrinking(0)
         upload = await shrinkVideo(file, (p) => setShrinking(p))
         setShrinking(null)
+      } else {
+        const { cleanPhoto, cleanVideo } = await import('../lib/clean')
+        upload = await (file.type.startsWith('video') ? cleanVideo(file) : cleanPhoto(file))
       }
       await onSubmit({ file: upload, venueId, vibe, caption: caption.trim(), allowComments: allow, hideName })
     } catch (e) {
