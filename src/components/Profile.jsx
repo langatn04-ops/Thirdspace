@@ -1,26 +1,51 @@
 import { useState } from 'react'
 import Card from './Card'
 import { supabase } from '../lib/supabase'
+import Turnstile, { TURNSTILE_KEY } from './Turnstile'
 
 function AuthForm({ toast }) {
   const [mode, setMode] = useState('in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [adult, setAdult] = useState(false)
+  const [captcha, setCaptcha] = useState(null)
+  const [tries, setTries] = useState(0)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [sentTo, setSentTo] = useState('')
 
   const submit = async (e) => {
     e.preventDefault()
+    if (mode === 'up' && !adult) return setErr('Third Space is for people aged 18 and over.')
+    if (TURNSTILE_KEY && !captcha) return setErr('Please wait a moment while we check you’re a person, then try again.')
     setBusy(true)
     setErr('')
+    const captchaToken = captcha || undefined
     const res = mode === 'in'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password, options: { data: { username: username.trim() } } })
+      ? await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } })
+      : await supabase.auth.signUp({
+          email, password,
+          options: { captchaToken, data: { username: username.trim(), age_confirmed_at: new Date().toISOString() } },
+        })
     setBusy(false)
+    setTries((n) => n + 1) // each bot check can only be used once
     if (res.error) return setErr(res.error.message)
-    if (mode === 'up' && !res.data.session) toast('Check your email to confirm your account.')
+    // With email confirmation on, there's no session until they click the link.
+    if (mode === 'up' && !res.data.session) setSentTo(email)
   }
+
+  if (sentTo)
+    return (
+      <div className="auth">
+        <div className="form">
+          <h3>Check your email</h3>
+          <p className="off">We sent a link to <b>{sentTo}</b>. Tap it to confirm your account, then come back and sign in.</p>
+          <p className="off">Can’t see it? Look in your spam or promotions folder.</p>
+          <button type="button" className="save primary" style={{ margin: 0, padding: 14 }} onClick={() => { setSentTo(''); setMode('in') }}>Back to sign in</button>
+        </div>
+      </div>
+    )
 
   return (
     <div className="auth">
@@ -38,6 +63,13 @@ function AuthForm({ toast }) {
         <label className="field">Password
           <input type="password" value={password} required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} onChange={(e) => setPassword(e.target.value)} />
         </label>
+        {mode === 'up' && (
+          <label className="tick">
+            <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />
+            <span>I’m 18 or over</span>
+          </label>
+        )}
+        <Turnstile onToken={setCaptcha} resetKey={tries} />
         {err && <p className="err">{err}</p>}
         <button className="save primary" style={{ margin: 0, padding: 14 }} disabled={busy}>
           {busy ? 'One moment…' : mode === 'in' ? 'Sign in' : 'Create account'}
