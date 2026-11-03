@@ -4,10 +4,12 @@ import { VIBES } from '../lib/util'
 
 const HIDE_FOR = [[3, 'For 3 hours'], [6, 'For 6 hours'], [24, 'Until tomorrow'], ['forever', 'Forever']]
 
-export default function NewPost({ venues, onSubmit, onClose }) {
+// myVenue is set when this is a venue's staff account: it posts at its own
+// venue only, and always with its name and Venue label showing.
+export default function NewPost({ venues, myVenue, onSubmit, onClose }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
-  const [venueId, setVenueId] = useState('')
+  const [venueId, setVenueId] = useState(myVenue || '')
   const [vibe, setVibe] = useState('')
   const [caption, setCaption] = useState('')
   const [allow, setAllow] = useState(true)
@@ -68,10 +70,11 @@ export default function NewPost({ venues, onSubmit, onClose }) {
         </label>
         <label className="field">
           Where are you?
-          <select value={venueId} onChange={(e) => setVenueId(e.target.value)}>
+          <select value={venueId} disabled={!!myVenue} onChange={(e) => setVenueId(e.target.value)}>
             <option value="">Choose a place</option>
             {sorted.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
           </select>
+          {myVenue && <small>Venue accounts post at their own venue, with the Venue label.</small>}
         </label>
         <div className="field">
           What’s the vibe?
@@ -89,10 +92,10 @@ export default function NewPost({ venues, onSubmit, onClose }) {
           <span><b>Allow comments</b><br /><small>You can change this later.</small></span>
           <button type="button" className="sw" role="switch" aria-checked={allow} aria-label="Allow comments" onClick={() => setAllow(!allow)} />
         </div>
-        <div className="own" style={{ margin: 0 }}>
+        {!myVenue && <div className="own" style={{ margin: 0 }}>
           <span><b>Post anonymously</b><br /><small>Hide your name so nobody knows you’re here right now.</small></span>
           <button type="button" className="sw" role="switch" aria-checked={!!hideName} aria-label="Post anonymously" onClick={() => setHideName(hideName ? null : 6)} />
-        </div>
+        </div>}
         {hideName && (
           <div className="field">
             Hide my name
