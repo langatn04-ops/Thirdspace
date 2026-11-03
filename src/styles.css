@@ -194,3 +194,6 @@ button{cursor:pointer}
 .vlabel{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:700;vertical-align:1px}
 p.del{margin:32px 0 0;text-align:center;font-size:13px}
 .safe.del{margin:32px 0 0}
+.cmt.mine{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.cmt .ask{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:13px}
+.cmt .ask .save{margin:0;padding:6px 14px}

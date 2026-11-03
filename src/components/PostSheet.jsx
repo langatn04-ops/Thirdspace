@@ -31,7 +31,44 @@ function FakeVideo({ p, onDoubleTap, pop }) {
   )
 }
 
-function Comments({ p, list, canPost, onPost, onNeedSignIn }) {
+// Press and hold (or right-click) on one of your own comments to delete it.
+function useLongPress(onLong) {
+  const timer = useRef(null)
+  const stop = () => clearTimeout(timer.current)
+  return {
+    onPointerDown: () => { stop(); timer.current = setTimeout(onLong, 500) },
+    onPointerUp: stop,
+    onPointerLeave: stop,
+    onPointerCancel: stop,
+    onContextMenu: (e) => { e.preventDefault(); stop(); onLong() },
+  }
+}
+
+function Comment({ c, p, mine, onDelete }) {
+  const [asking, setAsking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const press = useLongPress(() => mine && setAsking(true))
+  return (
+    <div className={'cmt' + (mine ? ' mine' : '')} {...(mine ? press : {})}>
+      <div className="av" style={backdrop(p.colors)}>{c.who[0].toUpperCase()}</div>
+      <div style={{ flex: 1 }}>
+        <b>{c.who}</b>
+        {c.verdict && <span className={'vd ' + c.verdict}>{c.verdict === 'good' ? 'Worth it' : 'Not great'}</span>}
+        <small>{timeAgo(c.createdAt)}</small>
+        <p>{c.body}</p>
+        {asking && (
+          <div className="row ask">
+            <span>Delete this comment?</span>
+            <button className="save primary" disabled={busy} onClick={async () => { setBusy(true); await onDelete(c); setBusy(false); setAsking(false) }}>Delete</button>
+            <button className="link" onClick={() => setAsking(false)}>Cancel</button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Comments({ p, list, me, canPost, onPost, onDelete, onNeedSignIn }) {
   const [v, setV] = useState('')
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
@@ -57,17 +94,7 @@ function Comments({ p, list, canPost, onPost, onNeedSignIn }) {
       {!list ? (
         <p className="off">Loading comments…</p>
       ) : list.length ? (
-        list.map((c) => (
-          <div className="cmt" key={c.id}>
-            <div className="av" style={backdrop(p.colors)}>{c.who[0].toUpperCase()}</div>
-            <div>
-              <b>{c.who}</b>
-              {c.verdict && <span className={'vd ' + c.verdict}>{c.verdict === 'good' ? 'Worth it' : 'Not great'}</span>}
-              <small>{timeAgo(c.createdAt)}</small>
-              <p>{c.body}</p>
-            </div>
-          </div>
-        ))
+        list.map((c) => <Comment key={c.id} c={c} p={p} mine={!!me && c.userId === me} onDelete={onDelete} />)
       ) : (
         <p className="off" style={{ marginBottom: 6 }}>No comments yet. If you’re there, tell people what it’s like.</p>
       )}
@@ -140,7 +167,8 @@ export function FavButton({ on, onClick }) {
   return <button className={'fav' + (on ? ' on' : '')} aria-pressed={on} onClick={onClick}>{on ? '★ Favourite' : '☆ Favourite'}</button>
 }
 
-export default function PostSheet({ p, venue, mine, liked, saved, fav, comments, canPost, onLike, onSave, onFavourite, onComment, onAllowComments, onReport, onBlock, onNeedSignIn, onClose }) {
+export default function PostSheet({ p, venue, mine, liked, saved, fav, comments, canPost, onLike, onSave, onFavourite, onComment, onAllowComments, onReport, onBlock, onNeedSignIn, onClose, me, onDelete, onDeleteComment }) {
+  const [deleting, setDeleting] = useState(false)
   const popRef = useRef(null)
   const doubleTap = () => {
     if (!liked) onLike()
@@ -180,6 +208,18 @@ export default function PostSheet({ p, venue, mine, liked, saved, fav, comments,
             onClick={() => onAllowComments(!p.allowComments)} />
         </div>
       )}
+      {mine && (deleting ? (
+        <div className="safe" style={{ margin: '12px 16px 0' }}>
+          <b>Delete this post?</b>
+          <small>The photo or video, its comments and likes are deleted too. This can’t be undone.</small>
+          <div className="row">
+            <button className="save primary" onClick={onDelete}>Delete post</button>
+            <button className="link" onClick={() => setDeleting(false)}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <p className="del" style={{ margin: '10px 16px 0', textAlign: 'left' }}><button className="link" onClick={() => setDeleting(true)}>Delete post</button></p>
+      ))}
       <div className="body">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <h3>{venue?.name}</h3>
@@ -188,7 +228,7 @@ export default function PostSheet({ p, venue, mine, liked, saved, fav, comments,
         <small style={{ color: 'var(--mute)' }}>{venue?.address}, Dublin &nbsp;·&nbsp; {VIBES[p.vibe].label}</small>
         {p.caption && <p>{p.caption}</p>}
       </div>
-      <Comments p={p} list={comments} canPost={canPost} onPost={onComment} onNeedSignIn={onNeedSignIn} />
+      <Comments p={p} list={comments} me={me} canPost={canPost} onPost={onComment} onDelete={onDeleteComment} onNeedSignIn={onNeedSignIn} />
       {!mine && <Safety key={p.id} p={p} onReport={onReport} onBlock={onBlock} />}
     </Sheet>
   )
