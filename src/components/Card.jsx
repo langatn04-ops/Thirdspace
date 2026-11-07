@@ -24,7 +24,10 @@ export default function Card({ p, venue, comments, onOpen }) {
           <b>{venue?.name || 'Somewhere in Dublin'}</b>
           <span>{venue?.address}</span>
         </div>
-        <span>♥ {p.likes}{p.allowComments ? <>&nbsp; 💬 {comments}</> : null}</span>
+        <span className="cnt">
+          <span className="n"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" /></svg>{p.likes}</span>
+          {p.allowComments ? <span className="n"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /></svg>{comments}</span> : null}
+        </span>
       </div>
     </button>
   )

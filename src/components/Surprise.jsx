@@ -4,7 +4,7 @@ import Media from './Media'
 import { FavButton } from './PostSheet'
 import { INTERESTS } from '../lib/search'
 import { pickSurprise } from '../lib/surprise'
-import { VIBES, categoryIcon, timeAgo } from '../lib/util'
+import { VIBES, backdrop, palette, timeAgo } from '../lib/util'
 
 const KEY = 'ts-interests'
 const remembered = () => {
@@ -57,11 +57,11 @@ export default function Surprise({ venues, latest, favourites, isFav, onFavourit
             <button key={k} className="chip" aria-pressed={interests.includes(k)} onClick={() => toggle(k)}>{l}</button>
           ))}
         </div>
-        {pick === null && <button className="save primary big" onClick={go}>✨ Surprise me</button>}
+        {pick === null && <button className="save primary big" onClick={go}>Surprise me</button>}
         {pick === false && <p className="off" style={{ marginTop: 16 }}>Nothing fits those yet. Try fewer interests.</p>}
         {pick && (
           <div className="pick" style={{ '--vc': pick.p ? VIBES[pick.p.vibe].color : '#aeaeb2' }}>
-            {pick.p ? <Media p={pick.p} ar="4/3" /> : <div className="ph none">{categoryIcon(pick.v.category)}</div>}
+            {pick.p ? <Media p={pick.p} ar="4/3" /> : <div className="ph none" style={backdrop(palette(pick.v.id))} />}
             <small>Tonight, go to</small>
             <h2>{pick.v.name}</h2>
             <p className="off">{pick.v.address}</p>
@@ -77,7 +77,7 @@ export default function Surprise({ venues, latest, favourites, isFav, onFavourit
             </div>
           </div>
         )}
-        {pick === false && <button className="save primary big" onClick={go}>✨ Try again</button>}
+        {pick === false && <button className="save primary big" onClick={go}>Try again</button>}
       </div>
     </Sheet>
   )

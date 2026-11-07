@@ -5,8 +5,7 @@ import { VIBES } from './util'
 export const FRESH_MS = 90 * 60 * 1000
 const HOUR_MS = 60 * 60 * 1000
 
-export const VIBE_EMOJI = { lit: '🔥', busy: '👥', chill: '😌', dead: '💤' }
-export const STALE_COLOR = '#aeaeb2'
+export const STALE_COLOR = '#76857c'
 
 const age = (p, now) => now - new Date(p.createdAt).getTime()
 export const isFresh = (p, now = Date.now()) => !!p && age(p, now) < FRESH_MS
@@ -44,5 +43,5 @@ export function vibeSummary(s, now = Date.now()) {
   const proof = s.lastHour
     ? `${s.lastHour} ${s.lastHour === 1 ? 'post' : 'posts'} in the last hour`
     : `posted ${hoursAgo(s.latest.createdAt, now)}`
-  return { text: `${VIBE_EMOJI[s.vibe]} ${VIBES[s.vibe].label} · ${proof}`, color: VIBES[s.vibe].color, live: true }
+  return { text: `${VIBES[s.vibe].label} · ${proof}`, color: VIBES[s.vibe].color, live: true }
 }

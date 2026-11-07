@@ -1,8 +1,8 @@
 export const VIBES = {
-  lit: { label: 'Lit', color: '#ff3b30' },
-  busy: { label: 'Busy', color: '#ff9f0a' },
-  chill: { label: 'Chill', color: '#27a89a' },
-  dead: { label: 'Dead', color: '#8e8e93' },
+  lit: { label: 'Lit', color: '#e5533d' },
+  busy: { label: 'Busy', color: '#e6a23c' },
+  chill: { label: 'Chill', color: '#7fc4a8' },
+  dead: { label: 'Dead', color: '#a39a86' },
 }
 
 // The database has used "quiet" for what the app now calls "dead".
@@ -24,10 +24,10 @@ export function categoryIcon(cat) {
 }
 
 const PALETTES = [
-  ['#ff2d55', '#7a1fa2', '#1a0b2e'], ['#ffd27a', '#2f8f6b', '#0f3d2e'], ['#ffb347', '#d6336c', '#3b1330'],
+  ['#e5533d', '#7a2a1c', '#1a0f0b'], ['#ffd27a', '#2f8f6b', '#0f3d2e'], ['#ffb347', '#b8452f', '#2b130c'],
   ['#ff9a3c', '#8a2b0f', '#2a0c05'], ['#cfe8a8', '#4f7d4b', '#16301f'], ['#e8b4a0', '#9c3d2e', '#2b0f0c'],
-  ['#6a5cff', '#e0338f', '#120a33'], ['#ffb199', '#4b79a1', '#0e2238'], ['#f7d070', '#e4572e', '#34130b'],
-  ['#d9c2a0', '#7b5b3a', '#241a10'], ['#00c2a8', '#ff6f91', '#1b1030'],
+  ['#d9a441', '#8a3b24', '#16100a'], ['#f0b47a', '#2f6b56', '#0c1f19'], ['#f7d070', '#e4572e', '#34130b'],
+  ['#d9c2a0', '#7b5b3a', '#241a10'], ['#7fc4a8', '#c4553f', '#10261f'],
 ]
 export function palette(seed) {
   let h = 0

@@ -22,15 +22,15 @@ const P = (id, vibe, caption, who, min, likes, ar, colors, extra = {}) => ({
 })
 
 const posts = [
-  P(1, 'lit', 'Doors opened at nine and the floor is already full. The queue is moving fast.', 'aoife.d', 4, 312, '4/5', ['#ff2d55', '#7a1fa2', '#1a0b2e'], { video: 21 }),
-  P(11, 'busy', 'Garden is packed and the DJ just started. Filmed from the back.', 'you', 6, 0, '4/5', ['#00c2a8', '#ff6f91', '#1b1030'], { video: 18 }),
+  P(1, 'lit', 'Doors opened at nine and the floor is already full. The queue is moving fast.', 'aoife.d', 4, 312, '4/5', ['#e5533d', '#7a2a1c', '#1a0f0b'], { video: 21 }),
+  P(11, 'busy', 'Garden is packed and the DJ just started. Filmed from the back.', 'you', 6, 0, '4/5', ['#7fc4a8', '#c4553f', '#10261f'], { video: 18 }),
   P(2, 'chill', 'Last of the sun by the pond. Someone is playing guitar near the bridge.', 'cian', 11, 148, '1/1', ['#ffd27a', '#2f8f6b', '#0f3d2e']),
-  P(3, 'busy', 'Three buskers, one big crowd. The violinist outside Brown Thomas is unreal.', 'maeve.k', 18, 226, '3/4', ['#ffb347', '#d6336c', '#3b1330']),
+  P(3, 'busy', 'Three buskers, one big crowd. The violinist outside Brown Thomas is unreal.', 'maeve.k', 18, 226, '3/4', ['#ffb347', '#b8452f', '#2b130c']),
   P(4, 'lit', 'Trad session in full swing. Snug seats are gone, standing room only.', 'donal', 22, 274, '4/6', ['#ff9a3c', '#8a2b0f', '#2a0c05'], { video: 34 }),
   P(5, 'dead', 'Deer, golden light, nobody else. Ideal if you want quiet.', 'sorcha', 35, 96, '5/4', ['#cfe8a8', '#4f7d4b', '#16301f']),
   P(6, 'busy', 'Warm, loud and full of regulars. A stool just opened at the bar.', 'thelonghall', 41, 131, '1/1', ['#e8b4a0', '#9c3d2e', '#2b0f0c'], { allowComments: false, venue: true }),
-  P(7, 'lit', 'Support act just finished and the room is buzzing.', 'lena.o', 47, 289, '3/4', ['#6a5cff', '#e0338f', '#120a33']),
-  P(8, 'chill', 'Sunset walk, ice cream queue, harbour lights coming on.', 'tadhg', 62, 204, '4/5', ['#ffb199', '#4b79a1', '#0e2238']),
+  P(7, 'lit', 'Support act just finished and the room is buzzing.', 'lena.o', 47, 289, '3/4', ['#d9a441', '#8a3b24', '#16100a']),
+  P(8, 'chill', 'Sunset walk, ice cream queue, harbour lights coming on.', 'tadhg', 62, 204, '4/5', ['#f0b47a', '#2f6b56', '#0c1f19']),
   P(9, 'busy', 'Fire juggler and a drum circle. Hard to get through but worth it.', 'niamh', 70, 177, '5/6', ['#f7d070', '#e4572e', '#34130b'], { video: 15 }),
   P(10, 'chill', 'Toastie, pint, window seat. Best seat in the city right now.', 'eoin.b', 190, 118, '4/5', ['#d9c2a0', '#7b5b3a', '#241a10']),
 ]

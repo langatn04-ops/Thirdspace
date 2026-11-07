@@ -6,7 +6,7 @@ import { isFresh } from '../lib/vibes'
 
 const SurpriseButton = ({ onClick }) => (
   <button className="surprise" onClick={onClick}>
-    <span>✨</span><span>Surprise me tonight<small>We’ll pick a place from what you like and what’s live now</small></span>
+    <span>Surprise me tonight<small>We’ll pick a place from what you like and what’s live now</small></span>
   </button>
 )
 

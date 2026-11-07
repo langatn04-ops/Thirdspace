@@ -35,23 +35,32 @@ function AuthForm({ toast }) {
     if (mode === 'up' && !res.data.session) setSentTo(email)
   }
 
+  const swap = () => { setMode(mode === 'in' ? 'up' : 'in'); setErr('') }
+  const top = (line) => (
+    <div className="gate-top">
+      <h1>Third Space</h1>
+      <p>{line}</p>
+    </div>
+  )
+
   if (sentTo)
     return (
-      <div className="auth">
+      <div className="gate">
+        {top('Nearly there.')}
         <div className="form">
           <h3>Check your email</h3>
-          <p className="off">We sent a link to <b>{sentTo}</b>. Tap it to confirm your account, then come back and sign in.</p>
+          <p className="off">We sent a link to <b>{sentTo}</b>. Tap it to confirm your account, then come back and log in.</p>
           <p className="off">Can’t see it? Look in your spam or promotions folder.</p>
-          <button type="button" className="save primary" style={{ margin: 0, padding: 14 }} onClick={() => { setSentTo(''); setMode('in') }}>Back to sign in</button>
+          <button type="button" className="go" onClick={() => { setSentTo(''); setMode('in') }}>Back to log in</button>
         </div>
       </div>
     )
 
   return (
-    <div className="auth">
+    <div className="gate">
+      {top(mode === 'in' ? 'Welcome back! Log in to continue.' : 'See what Dublin is like right now.')}
       <form className="form" onSubmit={submit}>
-        <h3>{mode === 'in' ? 'Welcome back' : 'Join Third Space'}</h3>
-        <p className="off">{mode === 'in' ? 'Sign in to post, comment and save places.' : 'Make an account to post, comment and save places.'}</p>
+        <h3>{mode === 'in' ? 'Log in' : 'Create an account'}</h3>
         {mode === 'up' && (
           <label className="field">Username
             <input value={username} required minLength={2} maxLength={30} autoComplete="username" onChange={(e) => setUsername(e.target.value)} />
@@ -71,12 +80,13 @@ function AuthForm({ toast }) {
         )}
         <Turnstile onToken={setCaptcha} resetKey={tries} />
         {err && <p className="err">{err}</p>}
-        <button className="save primary" style={{ margin: 0, padding: 14 }} disabled={busy}>
-          {busy ? 'One moment…' : mode === 'in' ? 'Sign in' : 'Create account'}
+        <button className="go" disabled={busy}>
+          {busy ? 'One moment…' : mode === 'in' ? 'Log in' : 'Create account'}
         </button>
-        <button type="button" className="link" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setErr('') }}>
-          {mode === 'in' ? 'New here? Create an account' : 'Already have an account? Sign in'}
-        </button>
+        <p className="swap">
+          {mode === 'in' ? 'Don’t have an account?' : 'Already have an account?'}
+          <button type="button" onClick={swap}>{mode === 'in' ? 'Sign up' : 'Log in'}</button>
+        </p>
       </form>
     </div>
   )
@@ -125,7 +135,7 @@ export default function Profile({ user, name, posts, saved, venueOf, commentCoun
     <>
       <div className="prof">
         <div className="ring">
-          <div className="av" style={{ background: 'linear-gradient(135deg,#00c2a8,#ff6f91)' }}>{name[0].toUpperCase()}</div>
+          <div className="av" style={{ background: 'var(--panel)', color: 'var(--brass)' }}>{name[0].toUpperCase()}</div>
         </div>
         <div>
           <h2>{name}</h2>
