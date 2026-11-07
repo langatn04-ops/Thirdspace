@@ -1,10 +1,34 @@
 import { useState } from 'react'
 import Card from './Card'
+import Media from './Media'
 import { supabase } from '../lib/supabase'
 import Turnstile, { TURNSTILE_KEY } from './Turnstile'
 
-function AuthForm({ toast }) {
-  const [mode, setMode] = useState('in')
+const At = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1" /></svg>
+const Key = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4" /><path d="M11 12l9-9M17 6l3 3M15 8l2 2" /></svg>
+const Person = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+const Arrow = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+
+// Photos that drift behind the welcome screen: the latest posts, tilted.
+const SPOTS = [
+  { l: '6%', t: '6%', w: '34%', r: -8 }, { l: '58%', t: '3%', w: '38%', r: 6 }, { l: '-6%', t: '34%', w: '30%', r: 4 },
+  { l: '74%', t: '36%', w: '30%', r: -5 }, { l: '10%', t: '64%', w: '36%', r: 7 }, { l: '56%', t: '68%', w: '34%', r: -7 },
+]
+function Collage({ posts }) {
+  const pics = posts.slice(0, SPOTS.length)
+  return (
+    <div className="drift" aria-hidden="true">
+      {pics.map((p, i) => (
+        <div key={p.id} className="dp" style={{ left: SPOTS[i].l, top: SPOTS[i].t, width: SPOTS[i].w, '--r': `${SPOTS[i].r}deg`, '--d': `${i * -3}s` }}>
+          <Media p={p} ar={i % 2 ? '3/4' : '4/5'} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function AuthForm({ posts }) {
+  const [mode, setMode] = useState(null) // null = welcome, 'in' = log in, 'up' = sign up
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
@@ -34,43 +58,37 @@ function AuthForm({ toast }) {
     // With email confirmation on, there's no session until they click the link.
     if (mode === 'up' && !res.data.session) setSentTo(email)
   }
+  const open = (m) => { setMode(m); setErr('') }
 
-  const swap = () => { setMode(mode === 'in' ? 'up' : 'in'); setErr('') }
-  const top = (line) => (
-    <div className="gate-top">
-      <h1>Third Space</h1>
-      <p>{line}</p>
-    </div>
-  )
-
+  let card = null
   if (sentTo)
-    return (
-      <div className="gate">
-        {top('Nearly there.')}
-        <div className="form">
-          <h3>Check your email</h3>
-          <p className="off">We sent a link to <b>{sentTo}</b>. Tap it to confirm your account, then come back and log in.</p>
-          <p className="off">Can’t see it? Look in your spam or promotions folder.</p>
-          <button type="button" className="go" onClick={() => { setSentTo(''); setMode('in') }}>Back to log in</button>
-        </div>
+    card = (
+      <div className="glass-card">
+        <div className="gc-top"><span>Third Space</span></div>
+        <h3>Check your email</h3>
+        <p className="gc-note">We sent a link to <b>{sentTo}</b>. Tap it to confirm your account, then come back and log in.</p>
+        <p className="gc-note">Can’t see it? Look in your spam or promotions folder.</p>
+        <button type="button" className="go-pill" onClick={() => { setSentTo(''); open('in') }}>Back to log in <i><Arrow /></i></button>
       </div>
     )
-
-  return (
-    <div className="gate">
-      {top(mode === 'in' ? 'Welcome back! Log in to continue.' : 'See what Dublin is like right now.')}
-      <form className="form" onSubmit={submit}>
-        <h3>{mode === 'in' ? 'Log in' : 'Create an account'}</h3>
+  else if (mode)
+    card = (
+      <form className="glass-card" onSubmit={submit}>
+        <div className="gc-top">
+          <button type="button" className="gc-link" onClick={() => open(null)}>Third Space</button>
+          <button type="button" className="gc-link strong" onClick={() => open(mode === 'in' ? 'up' : 'in')}>{mode === 'in' ? 'Sign up' : 'Log in'}</button>
+        </div>
+        <h3>{mode === 'in' ? 'Log in' : 'Sign up'}</h3>
         {mode === 'up' && (
-          <label className="field">Username
-            <input value={username} required minLength={2} maxLength={30} autoComplete="username" onChange={(e) => setUsername(e.target.value)} />
+          <label className="pillin"><i><Person /></i>
+            <input value={username} required minLength={2} maxLength={30} autoComplete="username" placeholder="username" aria-label="Username" onChange={(e) => setUsername(e.target.value)} />
           </label>
         )}
-        <label className="field">Email
-          <input type="email" value={email} required autoComplete="email" onChange={(e) => setEmail(e.target.value)} />
+        <label className="pillin"><i><At /></i>
+          <input type="email" value={email} required autoComplete="email" placeholder="e-mail address" aria-label="Email" onChange={(e) => setEmail(e.target.value)} />
         </label>
-        <label className="field">Password
-          <input type="password" value={password} required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} onChange={(e) => setPassword(e.target.value)} />
+        <label className="pillin"><i><Key /></i>
+          <input type="password" value={password} required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} placeholder="password" aria-label="Password" onChange={(e) => setPassword(e.target.value)} />
         </label>
         {mode === 'up' && (
           <label className="tick">
@@ -80,14 +98,28 @@ function AuthForm({ toast }) {
         )}
         <Turnstile onToken={setCaptcha} resetKey={tries} />
         {err && <p className="err">{err}</p>}
-        <button className="go" disabled={busy}>
-          {busy ? 'One moment…' : mode === 'in' ? 'Log in' : 'Create account'}
-        </button>
-        <p className="swap">
-          {mode === 'in' ? 'Don’t have an account?' : 'Already have an account?'}
-          <button type="button" onClick={swap}>{mode === 'in' ? 'Sign up' : 'Log in'}</button>
-        </p>
+        <div className="gc-row">
+          <small>For people aged 18 and over. Your posts show where you are right now, so only share what you’re happy for others to see.</small>
+          <button className="round-go" disabled={busy} aria-label={mode === 'in' ? 'Log in' : 'Create account'}>{busy ? '…' : <Arrow />}</button>
+        </div>
+        <p className="gc-foot">Please go out responsibly!</p>
       </form>
+    )
+
+  return (
+    <div className={'welcome' + (card ? ' dim' : '')}>
+      <Collage posts={posts} />
+      <div className="wm">
+        <h1>Third Space</h1>
+        <p>Dublin, right now</p>
+      </div>
+      {card || (
+        <div className="wl-actions">
+          <button className="wl-btn solid" onClick={() => open('up')}>Sign up</button>
+          <button className="wl-btn" onClick={() => open('in')}>Log in</button>
+          <p>Third Space is for people aged 18 and over.</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -124,7 +156,7 @@ function DeleteAccount({ onDelete }) {
 
 export default function Profile({ user, name, posts, saved, venueOf, commentCount, onOpen, toast, onDeleteAccount }) {
   const [tab, setTab] = useState('posts')
-  if (supabase && !user) return <AuthForm toast={toast} />
+  if (supabase && !user) return <AuthForm posts={posts} />
 
   const mine = posts.filter((p) => p.userId === (user?.id ?? 'you'))
   const savedPosts = posts.filter((p) => saved.has(p.id))
