@@ -285,7 +285,7 @@ export default function App() {
   return (
     <>
       <div className="wrap">
-        <header className="mast">
+        {!(tab === 'me' && data && supabase && !user) && <header className="mast">
           <h1>Third Space</h1><p>Dublin, right now</p>
           {data && (
             <button className="srch" aria-label="Search places" onClick={() => { setTab('map'); setFocusSearch((n) => n + 1) }}>
@@ -298,7 +298,7 @@ export default function App() {
               {!!unread && <b>{unread > 9 ? '9+' : unread}</b>}
             </button>
           )}
-        </header>
+        </header>}
         <main>{page}</main>
       </div>
       <nav className="tabs" aria-label="Main">
