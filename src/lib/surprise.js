@@ -1,6 +1,6 @@
 import { fitsInterest } from './search'
+import { isFresh } from './vibes'
 
-const HOUR = 3600 * 1000
 // How much each vibe counts towards a pick when it was posted in the last few hours.
 const LIVE = { lit: 6, busy: 4, chill: 3, dead: 0 }
 const QUIET_INTERESTS = ['coffee', 'parks', 'sea']
@@ -16,7 +16,7 @@ export function pickSurprise({ venues, latest, interests, favourites, skip }) {
       const p = latest[v.id]
       const matched = interests.filter((k) => fitsInterest(v, p, k))
       if (interests.length && !matched.length) return null
-      const fresh = p && Date.now() - new Date(p.createdAt).getTime() < 4 * HOUR
+      const fresh = isFresh(p)
       let weight = 1
       if (fresh) weight += wantsQuiet && p.vibe === 'chill' ? 6 : LIVE[p.vibe] ?? 1
       if (favourites.has(v.id)) weight += 2

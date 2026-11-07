@@ -200,3 +200,5 @@ p.del{margin:32px 0 0;text-align:center;font-size:13px}
 .tick{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
 .tick input{width:20px;height:20px;accent-color:var(--accent)}
 .captcha{min-height:65px}
+.tag.stale{color:var(--mute);font-weight:500}
+.card.old .pill{background:rgba(255,255,255,.75);color:#555}

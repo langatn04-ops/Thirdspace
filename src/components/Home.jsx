@@ -2,6 +2,7 @@ import Card from './Card'
 import Chips from './Chips'
 import Media from './Media'
 import { VIBES, backdrop } from '../lib/util'
+import { isFresh } from '../lib/vibes'
 
 const SurpriseButton = ({ onClick }) => (
   <button className="surprise" onClick={onClick}>
@@ -11,7 +12,9 @@ const SurpriseButton = ({ onClick }) => (
 
 export default function Home({ posts, venueOf, commentCount, filter, setFilter, onOpen, sample, onSurprise }) {
   if (!posts.length) return <><SurpriseButton onClick={onSurprise} /><p className="empty">Nothing posted yet. Tap + to share what’s happening near you.</p></>
-  const top = posts.reduce((a, b) => (b.likes > a.likes ? b : a))
+  // The cover is the most-liked post from the last 90 minutes, if there is one.
+  const recent = posts.filter((p) => isFresh(p))
+  const top = (recent.length ? recent : posts).reduce((a, b) => (b.likes > a.likes ? b : a))
   const shown = posts.filter((p) => filter === 'all' || p.vibe === filter)
   return (
     <>
@@ -33,7 +36,7 @@ export default function Home({ posts, venueOf, commentCount, filter, setFilter, 
         <Media p={top}><div className="ov" /></Media>
         <div className="pill"><i />{VIBES[top.vibe].label}</div>
         <div className="cv">
-          <small>Most talked about tonight</small>
+          <small>{recent.length ? 'Most talked about right now' : 'Most talked about lately'}</small>
           <h2>{venueOf(top)?.name}</h2>
           <p>{top.caption}</p>
         </div>

@@ -32,7 +32,7 @@ const posts = [
   P(7, 'lit', 'Support act just finished and the room is buzzing.', 'lena.o', 47, 289, '3/4', ['#6a5cff', '#e0338f', '#120a33']),
   P(8, 'chill', 'Sunset walk, ice cream queue, harbour lights coming on.', 'tadhg', 62, 204, '4/5', ['#ffb199', '#4b79a1', '#0e2238']),
   P(9, 'busy', 'Fire juggler and a drum circle. Hard to get through but worth it.', 'niamh', 70, 177, '5/6', ['#f7d070', '#e4572e', '#34130b'], { video: 15 }),
-  P(10, 'chill', 'Toastie, pint, window seat. Best seat in the city right now.', 'eoin.b', 80, 118, '4/5', ['#d9c2a0', '#7b5b3a', '#241a10']),
+  P(10, 'chill', 'Toastie, pint, window seat. Best seat in the city right now.', 'eoin.b', 190, 118, '4/5', ['#d9c2a0', '#7b5b3a', '#241a10']),
 ]
 
 const C = (postId, who, verdict, body, min) => ({ id: postId + who, postId, who, verdict, body, createdAt: ago(min) })
