@@ -13,6 +13,7 @@ What's happening in Dublin, right now. People post photos and videos from venues
 - **Word filter:** captions and comments can't include slurs, threats or phone numbers.
 - **Delete my account (bottom of Profile):** deletes the person's account and everything they added, including photos and videos, as GDPR requires.
 - **Delete your own posts and comments:** "Delete post" on your own posts (the photo or video goes too). Press and hold one of your comments to delete it.
+- **Safer sign-ups:** an "I'm 18 or over" tick box, a "Check your email" screen, and an optional bot check (see below).
 - **Report and block (bottom of every post):** report a post with a reason, or block the person who posted it. You stop seeing what you reported or blocked straight away. A post with 3 reports hides for everyone until a moderator checks it. Anonymous posts can be reported but not blocked, so blocking never gives away who posted them.
 - **Journal:** written reviews of Dublin places with star ratings.
 - **Profile:** your posts and the posts you've saved, plus sign in and sign out.
@@ -43,6 +44,17 @@ Until there are real posts in the database, the app shows sample posts so it nev
 ## The word filter
 
 Captions and comments with slurs, threats or phone numbers are refused, with a message saying what to change. Simple disguises like "k1ll y0urself" are caught too. To add or remove words, open **Table Editor → blocked_words** in Supabase. Use lowercase letters and spaces only, and set `kind` to `slur` or `threat`. Whole words only, so "knackered" and "Negroni" are fine.
+
+## Safer sign-ups (Supabase and Cloudflare settings, once)
+
+The sign-up form asks people to confirm they're 18 or over, and shows a "Check your email" screen afterwards. The rest is settings:
+
+1. **Email verification.** In Supabase, go to **Authentication → Sign In / Providers → Email** and make sure **Confirm email** is on. Then go to **Authentication → URL Configuration** and set **Site URL** to `https://thirdspace-mu.vercel.app`, so the link in the email opens the app.
+2. **Sign-up limits.** In **Authentication → Rate Limits**, keep sign-ups low, for example 30 per hour. That's plenty for real people and slows down bots.
+3. **Bot check (Cloudflare Turnstile, free).** Do these in order, or sign-in stops working:
+   1. In Cloudflare (dash.cloudflare.com), open **Turnstile → Add widget**. Add the hostname `thirdspace-mu.vercel.app`, choose **Managed**, and copy the **Site key** and **Secret key**.
+   2. In Vercel, add the environment variable `VITE_TURNSTILE_SITE_KEY` with the **Site key**, then redeploy. A small check box now appears on the sign-in and sign-up forms.
+   3. Only then, in Supabase, go to **Authentication → Attack Protection**, turn on **CAPTCHA protection**, choose **Turnstile** and paste the **Secret key**.
 
 ## Venue accounts
 
